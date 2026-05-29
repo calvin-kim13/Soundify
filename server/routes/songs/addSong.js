@@ -4,8 +4,7 @@ import { Router } from "express";
 const router = Router();
 import multer from "multer";
 import { memoryStorage } from "multer";
-import dotenv from "dotenv";
-dotenv.config();
+import * as path from "path";
 import { uploadSong, uploadImage } from "../../S3Service/index.js";
 
 const storage = memoryStorage();
@@ -18,34 +17,45 @@ router.post(
     { name: "imgFilename", maxCount: 1 },
   ]),
   async (req, res) => {
-    const { title, genre, username, tags, artist } = req.body;
-    const fName = tags.toString() + username;
-    const content = {
-      filename: fName,
-      bucketname: "soundclone-music",
-      file: req.files["filename"][0].buffer,
-    };
-    if (req.files["imgFilename"] !== undefined) {
-      const imageContent = {
-        filename: fName + req.files["imgFilename"][0].originalname,
-        bucketname: "soundclone-music",
-        file: req.files["imgFilename"][0].buffer,
+    try {
+      const { title, genre, username, tags, artist } = req.body;
+      // Unique base name so concurrent/repeat uploads never collide on disk or
+      // on the Song.link unique index.
+      const fName = `${tags.toString()}${username}${Date.now()}`;
+
+      const songFile = req.files["filename"][0];
+      const songExt = path.extname(songFile.originalname) || ".mp3";
+      const content = {
+        filename: fName + songExt,
+        file: songFile.buffer,
       };
-      await uploadImage(imageContent);
+
+      let coverUrl;
+      if (req.files["imgFilename"] !== undefined) {
+        const imgFile = req.files["imgFilename"][0];
+        const imgExt = path.extname(imgFile.originalname) || ".jpg";
+        const imageContent = {
+          filename: fName + imgExt,
+          file: imgFile.buffer,
+        };
+        coverUrl = await uploadImage(imageContent);
+      }
+
+      const newSong = {
+        title: title,
+        tags: tags,
+        genre: genre,
+        artist: artist,
+        username: username,
+      };
+
+      await uploadSong(content, newSong, coverUrl);
+
+      res.redirect("/");
+    } catch (err) {
+      console.error("Upload failed:", err);
+      res.status(500).json({ error: "Upload failed" });
     }
-
-    const newSong = {
-      title: title,
-      tags: tags,
-      genre: genre,
-      artist: artist,
-      username: username,
-      filename: fName,
-    };
-
-    await uploadSong(content, newSong);
-
-    res.redirect("/");
   }
 );
 

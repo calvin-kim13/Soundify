@@ -44,6 +44,9 @@ app.use(bodyParser({ limit: "50mb" }));
 app.use(cors());
 app.use(express.json());
 
+// Serve locally-stored uploads (songs + cover art)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/", getSongs);
 app.use("/", postSong);
 app.use("/", deleteSong);

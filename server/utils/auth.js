@@ -1,11 +1,15 @@
 import pkg from "jsonwebtoken"
+import dotenv from "dotenv"
+dotenv.config()
 const { verify } = pkg
-const secret = "UNSAFE_STRING"
+const secret = process.env.JWT_SECRET || "UNSAFE_STRING"
 const expiration = Math.floor(Date.now() / 1000) + 60 * 60
 
 export function authMiddleware({ req }) {
     let token =
-        req.body.variables.token || req.query.token || req.headers.authorization
+        req.body?.variables?.token ||
+        req.query.token ||
+        req.headers.authorization
     if (req.headers.authorization) {
         token = token.split(" ").pop().trim()
     }

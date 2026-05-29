@@ -1,82 +1,59 @@
-import pkg from "aws-sdk"
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3"
-const { S3 } = pkg
+import * as fs from "fs/promises"
+import * as path from "path"
+import { fileURLToPath } from "url"
 import dotenv from "dotenv"
 dotenv.config()
 import Song from "../models/Songs.js"
 import User from "../models/User.js"
-let imageLocation
-const s3Client = new S3Client({ region: "us-west-1" })
-const s3 = new S3({
-    apiVersion: "latest",
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-})
 
-const uploadImage = (content) => {
-    return new Promise((resolve, reject) => {
-        const params = {
-            Key: content.filename,
-            Bucket: content.bucketname,
-            Body: content.file,
-            ContentType: "image/jpeg",
-            ACL: "public-read",
-        }
+// Local-disk storage: uploaded files are written to server/uploads and served
+// statically by Express at /uploads (see server.js). No cloud account needed.
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const UPLOADS_DIR = path.join(__dirname, "..", "uploads")
+const BASE_URL = (
+    process.env.SERVER_URL || `http://localhost:${process.env.PORT || 4000}`
+).replace(/\/$/, "")
 
-        s3.upload(params, async (err, data) => {
-            if (err) reject(err)
-            else {
-                imageLocation = data.Location
-                resolve(data)
-            }
-        })
-    })
+await fs.mkdir(UPLOADS_DIR, { recursive: true })
+
+// Strip any path components so a crafted filename can never escape UPLOADS_DIR.
+const safeName = (name) => path.basename(name)
+const publicUrl = (key) => `${BASE_URL}/uploads/${encodeURIComponent(key)}`
+
+const uploadImage = async (content) => {
+    const key = safeName(content.filename)
+    await fs.writeFile(path.join(UPLOADS_DIR, key), content.file)
+    return publicUrl(key)
 }
 
-const uploadSong = (content, song) => {
-    return new Promise((resolve, reject) => {
-        const params = {
-            Key: content.filename,
-            Bucket: content.bucketname,
-            Body: content.file,
-            ContentType: "audio/mpeg",
-            ACL: "public-read",
-        }
+const uploadSong = async (content, song, coverUrl) => {
+    const key = safeName(content.filename)
+    await fs.writeFile(path.join(UPLOADS_DIR, key), content.file)
 
-        s3.upload(params, async (err, data) => {
-            if (err) reject(err)
-            else {
-                const newSong = new Song({
-                    title: song.title,
-                    genre: song.genre,
-                    genre: song.genre,
-                    tags: song.tags,
-                    artist: song.artist,
-                    username: song.username,
-                    filename: content.filename,
-                    cover: imageLocation,
-                    link: data.Location,
-                })
-                newSong.save()
-                await User.findOneAndUpdate(
-                    { username: song.username },
-                    { $addToSet: { songs: newSong._id } },
-                )
-                resolve(data)
-            }
-        })
+    const newSong = new Song({
+        title: song.title,
+        genre: song.genre,
+        tags: song.tags,
+        artist: song.artist,
+        username: song.username,
+        filename: key,
+        cover: coverUrl,
+        link: publicUrl(key),
     })
+    await newSong.save()
+    await User.findOneAndUpdate(
+        { username: song.username },
+        { $addToSet: { songs: newSong._id } },
+    )
+    return newSong
 }
 
 const deleteSong = async (key) => {
     try {
-        const data = await s3Client.send(
-            new DeleteObjectCommand({ Bucket: "soundclone-music", Key: key }),
-        )
-        console.log("Success. Object deleted.", data)
-        return data
+        await fs.unlink(path.join(UPLOADS_DIR, safeName(key)))
+        console.log("Success. File deleted.", key)
     } catch (err) {
-        console.log("Error.", err)
+        console.log("Error deleting file.", err)
     }
 }
 
