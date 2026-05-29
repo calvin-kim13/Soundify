@@ -24,11 +24,12 @@ const AudioPlayer = ({
   singlePL,
   setCurrentSong,
   getSongInfo,
+  volume,
+  setVolume,
 }) => {
   // State
   const location = useLocation();
 
-  const [volume, setVolume] = useState(0.2);
   const [song, setSong] = useState({ title: "", artist: "" });
   // Destructure for conciseness
   useEffect(() => {}, []);
@@ -284,7 +285,7 @@ const AudioPlayer = ({
           <Slider
             onChange={onVolumeChange}
             aria-label="Volume"
-            defaultValue={0.25}
+            value={volume}
             max={1}
             min={0.01}
             step={0.01}

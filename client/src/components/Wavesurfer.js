@@ -41,6 +41,7 @@ export default function Waveform({
   setIsPlaying,
   isPlaying,
   isDetailsPlaying,
+  volume,
 }) {
   const waveformRef = useRef(null);
   const wavesurfer = useRef(null);
@@ -58,6 +59,9 @@ export default function Waveform({
         wavesurfer.current.load(audio.current);
       }
     }
+    // wavesurfer defaults its volume to 1 on init, which would override the
+    // global volume on the shared audio element — keep them in sync.
+    if (typeof volume === "number") wavesurfer.current.setVolume(volume);
     wavesurfer.current.on("waveform-ready", function () {
       // https://wavesurfer-js.org/docs/methods.html
       // make sure object still available when file loaded
@@ -91,6 +95,13 @@ export default function Waveform({
     // when component unmount
     return () => wavesurfer.current.destroy();
   }, [audio.current.src]);
+
+  // Keep wavesurfer's volume in sync with the global volume.
+  useEffect(() => {
+    if (wavesurfer.current && typeof volume === "number") {
+      wavesurfer.current.setVolume(volume);
+    }
+  }, [volume]);
 
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);

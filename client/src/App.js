@@ -30,31 +30,38 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [dashSearchResults, setDashSearchResults] = useState();
   const [detailsPlaying, isDetailsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.2);
 
   const [singlePL, setSinglePL] = useState([]);
   const { user } = useContext(AuthContext);
 
+  // Opening a song-details page starts paused so it doesn't inherit play state.
   useEffect(() => {
     if (location.pathname.split("/")[1] === "song") {
       setIsPlaying(false);
     }
   }, [location.pathname]);
-  useEffect(() => {
-    if (detailsPlaying && location.pathname.split("/")[1] === "") {
-      if (isPlaying || detailsPlaying) currentPlayer.current.play();
-    }
-  }, [detailsPlaying, location.pathname]);
-  useEffect(() => {
-    if (currentPlayer.current.src !== "" && isPlaying)
-      currentPlayer.current.play();
-  }, [currentSong, location.pathname]);
 
+  // Single source of truth for playback: only play/pause in response to the
+  // isPlaying state — never on navigation. (Previously several effects called
+  // play() on route changes, which made songs restart when returning to a page.)
   useEffect(() => {
-    //debugger
-    if (isPlaying) currentPlayer.current.play();
-
-    if (!isPlaying) currentPlayer.current.pause();
+    if (!currentPlayer.current) return;
+    if (isPlaying) currentPlayer.current.play().catch(() => {});
+    else currentPlayer.current.pause();
   }, [isPlaying]);
+
+  // When the selected track changes, continue only if already playing.
+  useEffect(() => {
+    if (isPlaying && currentPlayer.current && currentPlayer.current.src) {
+      currentPlayer.current.play().catch(() => {});
+    }
+  }, [currentSong]);
+
+  // Keep the audio element's volume in sync with the global volume state.
+  useEffect(() => {
+    if (currentPlayer.current) currentPlayer.current.volume = volume;
+  }, [volume]);
   return (
     <div>
       <Navbar setDashSearchResults={setDashSearchResults} />
@@ -109,6 +116,7 @@ function App() {
               setIsPlaying={setIsPlaying}
               currentPlayer={currentPlayer}
               setCurrentSong={setCurrentSong}
+              volume={volume}
             />
           }
         />
@@ -172,6 +180,8 @@ function App() {
           currentSong={currentSong}
           oneSongClick={oneSongClick}
           setOneSongClick={setOneSongClick}
+          volume={volume}
+          setVolume={setVolume}
         />
       )}
       <div>

@@ -19,6 +19,8 @@ const Footer = ({
     trackProgress,
     setTrackProgress,
     getSongInfo,
+    volume,
+    setVolume,
 }) => {
     return (
         // this link needs to be changed upon new click
@@ -41,6 +43,8 @@ const Footer = ({
                 currentSong={currentSong}
                 oneSongClick={oneSongClick}
                 setOneSongClick={setOneSongClick}
+                volume={volume}
+                setVolume={setVolume}
             />
         </div>
     )

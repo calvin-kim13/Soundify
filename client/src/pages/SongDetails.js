@@ -47,6 +47,7 @@ const SongDetails = ({
     getSongInfo,
     isDetailsPlaying,
     setSinglePL,
+    volume,
 }) => {
     const username = localStorage.getItem("username")
     const [addComment, { error }] = useMutation(ADD_COMMENT)
@@ -307,6 +308,7 @@ const SongDetails = ({
                         isPlaying={isPlaying}
                         setIsPlaying={setIsPlaying}
                         audio={currentPlayer}
+                        volume={volume}
                     />
                     <div
                         style={{
