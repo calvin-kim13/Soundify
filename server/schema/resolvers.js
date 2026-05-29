@@ -11,7 +11,7 @@ const secret = process.env.JWT_SECRET || "UNSAFE_STRING";
 import { default as jsonPkg } from "jsonwebtoken";
 import { AuthenticationError } from "apollo-server-express";
 const { sign } = jsonPkg;
-import { deleteSong } from "../S3Service/index.js";
+import { deleteSong } from "../storage/index.js";
 const resolvers = {
   Query: {
     user: async (parent, { _id }) => {
@@ -161,7 +161,15 @@ const resolvers = {
     },
     removeSong: async (parent, { songId, token, key }, context) => {
       if (context.user) {
-        deleteSong(key);
+        // Remove both the audio file and its cover art from disk, derived
+        // from the stored record (more reliable than a client-passed key).
+        const song = await Song.findById(songId);
+        if (song) {
+          if (song.filename) deleteSong(song.filename);
+          if (song.cover) {
+            deleteSong(decodeURIComponent(song.cover.split("/").pop()));
+          }
+        }
         return Song.deleteOne({ _id: mongoose.Types.ObjectId(songId) });
       }
       throw new AuthenticationError("You need to be logged in!");

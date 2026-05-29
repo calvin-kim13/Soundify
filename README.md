@@ -140,7 +140,7 @@ Soundify/
     ├── schema/             # GraphQL typeDefs + resolvers
     ├── models/             # Mongoose models (User, Songs, Playlists)
     ├── routes/             # REST routes (file upload, etc.)
-    ├── S3Service/          # file-storage layer (local disk)
+    ├── storage/            # file-storage layer (local disk)
     ├── utils/              # JWT auth middleware
     └── uploads/            # uploaded files (gitignored, created at runtime)
 ```

@@ -5,7 +5,7 @@ const router = Router();
 import multer from "multer";
 import { memoryStorage } from "multer";
 import * as path from "path";
-import { uploadSong, uploadImage } from "../../S3Service/index.js";
+import { uploadSong, uploadImage } from "../../storage/index.js";
 
 const storage = memoryStorage();
 const upload = multer({ storage: storage });
