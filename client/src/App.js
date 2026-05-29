@@ -13,6 +13,7 @@ import { AuthContext } from "./context/authContext";
 import { useContext, useEffect, useState, useRef } from "react";
 import Footer from "./components/Footer";
 import DashResults from "./components/Dashboard/DashResults";
+import "./styles/auth-theme.css";
 
 function App() {
   const [genreClickCount, setGenreClickCount] = useState(0);
@@ -63,7 +64,7 @@ function App() {
     if (currentPlayer.current) currentPlayer.current.volume = volume;
   }, [volume]);
   return (
-    <div>
+    <div className={!user ? "soundify-auth-theme" : ""}>
       <Navbar setDashSearchResults={setDashSearchResults} />
       <Routes>
         <Route

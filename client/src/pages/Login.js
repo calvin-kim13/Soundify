@@ -2,11 +2,9 @@ import { useContext, useState } from "react"
 import { AuthContext } from "../context/authContext"
 import { useForm } from "../utils/hooks/hooks"
 import { useMutation } from "@apollo/react-hooks"
-import { Form, Input, Alert, message } from "antd"
-import Button from "../components/Button"
-import "./styles/Login.css"
-import "../components/styles/Button.css"
-import * as IoIcons from "react-icons/io"
+import { message } from "antd"
+import { IoIosArrowBack } from "react-icons/io"
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
 
 import { gql } from "graphql-tag"
 import { Link, useNavigate } from "react-router-dom"
@@ -26,6 +24,7 @@ function Login(props) {
 
     const myContext = useContext(AuthContext)
     const [errors, setErrors] = useState([])
+    const [showPassword, setShowPassword] = useState(false)
 
     function loginUserCallback() {
         const hide = message.loading("Logging in...", 0)
@@ -57,59 +56,84 @@ function Login(props) {
     }
 
     return (
-        <div className="login-wrapper">
-            <Form name="basic" autoComplete="off" className="login-form">
-                <IoIcons.IoIosArrowDropleft
+        <div className="sf-auth">
+            <div className="sf-auth-card">
+                <button
+                    type="button"
+                    className="sf-back"
                     onClick={handleBackClick}
-                    className="login-icon"
-                />
-                <div className="login-header">
-                    <p className="login">Login</p>
-                    <p className="login-description">
-                        Log in below to start listening to music!
-                    </p>
-                </div>
-                <div className="form-input-wrapper">
-                    <Input
-                        className="input"
-                        placeholder="Email"
-                        name="email"
-                        onChange={onChange}
-                    />
+                    aria-label="Back to home"
+                >
+                    <IoIosArrowBack />
+                </button>
 
-                    <Input.Password
-                        className="input"
-                        placeholder="Password"
-                        name="password"
-                        onChange={onChange}
-                    />
-                    <Button
-                        className="solid-btn login-btn"
-                        type="primary"
-                        htmlType="submit"
-                        onClick={onSubmit}
-                    >
-                        Login
-                    </Button>
-                    <p>
-                        Don't have an account?{" "}
-                        <Link className="link-to-register" to="/register">
-                            Register here
-                        </Link>
-                    </p>
-                    {errors.map(function (error, index) {
-                        return (
-                            <Alert
-                                className="error"
-                                description="Something went wrong. Please try again."
-                                type="error"
-                                showIcon
-                                key={index}
-                            />
-                        )
-                    })}
+                <div className="sf-auth-head">
+                    <div className="sf-wordmark">Soundify</div>
+                    <h1>Welcome back</h1>
+                    <p>Log in to keep listening.</p>
                 </div>
-            </Form>
+
+                <form
+                    className="sf-form"
+                    autoComplete="off"
+                    onSubmit={(e) => {
+                        e.preventDefault()
+                        onSubmit(e)
+                    }}
+                >
+                    <div className="sf-field">
+                        <input
+                            className="sf-input"
+                            placeholder="Email"
+                            name="email"
+                            type="email"
+                            onChange={onChange}
+                        />
+                    </div>
+
+                    <div className="sf-field sf-field-pw">
+                        <input
+                            className="sf-input"
+                            placeholder="Password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            onChange={onChange}
+                        />
+                        <button
+                            type="button"
+                            className="sf-eye"
+                            onClick={() => setShowPassword((s) => !s)}
+                            aria-label={
+                                showPassword ? "Hide password" : "Show password"
+                            }
+                        >
+                            {showPassword ? (
+                                <AiOutlineEyeInvisible />
+                            ) : (
+                                <AiOutlineEye />
+                            )}
+                        </button>
+                    </div>
+
+                    <button
+                        className="sf-btn sf-btn-primary sf-btn-block"
+                        type="submit"
+                    >
+                        {loading ? "Logging in..." : "Log in"}
+                    </button>
+
+                    <p className="sf-switch">
+                        Don't have an account?{" "}
+                        <Link to="/register">Sign up</Link>
+                    </p>
+
+                    {errors.map((error, index) => (
+                        <div className="sf-error" key={index}>
+                            Something went wrong. Please try again.
+                        </div>
+                    ))}
+                </form>
+            </div>
         </div>
     )
 }

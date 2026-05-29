@@ -1,25 +1,36 @@
 import { Link } from "react-router-dom"
-import Button from "./Button"
-import "./styles/Hero.css"
 
-const Header = () => {
+const Hero = () => {
     return (
-        <div className="hero-container">
-            <h1>Listen/Jive/Relax - Musical Sharing</h1>
-            <p>
-                Upload your musical creations and listen in on others musical
-                works!
+        <section className="sf-hero">
+            <span className="sf-eyebrow">Stream • Share • Discover</span>
+            <h1 className="sf-hero-title">
+                Where your sound <br />
+                finds its <span className="sf-grad">audience</span>.
+            </h1>
+            <p className="sf-hero-sub">
+                Upload your tracks, build playlists, and tune into what everyone
+                else is creating — all in one place.
             </p>
-            <div className="hero-button-wrapper">
-                <Link to="/register">
-                    <Button className="solid-btn hero-btn">Register</Button>
+            <div className="sf-hero-cta">
+                <Link to="/register" className="sf-btn sf-btn-primary">
+                    Get started
                 </Link>
-                <Link to="/login">
-                    <Button className="outline-btn hero-btn">Login</Button>
+                <Link to="/login" className="sf-btn sf-btn-ghost">
+                    Log in
                 </Link>
             </div>
-        </div>
+            <div className="sf-bars" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </section>
     )
 }
 
-export default Header
+export default Hero
