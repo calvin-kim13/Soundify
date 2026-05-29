@@ -138,7 +138,9 @@ const Dashboard2 = ({
                     setIsPlaying(true);
                   }
                   setCurrentSong(song.link);
-                  setSinglePL([]);
+                  // Use the displayed songs as the play queue so the footer's
+                  // next/previous buttons can navigate through them.
+                  setSinglePL({ songs: songs });
                   getSongInfo({
                     title: song.title,
                     artist: song.artist,

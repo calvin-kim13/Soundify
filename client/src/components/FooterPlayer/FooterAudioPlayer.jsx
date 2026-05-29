@@ -77,6 +77,7 @@ const AudioPlayer = ({
   };
 
   const toPrevTrack = () => {
+    if (!singlePL.songs || singlePL.songs.length === 0) return;
     if (trackIndex - 1 < 0) {
       getTrackIndex(singlePL.songs.length - 1);
     } else {
@@ -85,6 +86,7 @@ const AudioPlayer = ({
   };
 
   const toNextTrack = () => {
+    if (!singlePL.songs || singlePL.songs.length === 0) return;
     if (trackIndex < singlePL.songs.length - 1) {
       getTrackIndex(trackIndex + 1);
     } else {
@@ -92,14 +94,12 @@ const AudioPlayer = ({
     }
   };
 
-  const onVolumeChange = (e) => {
-    const { target } = e;
-    const newVolume = +target.value;
-
-    if (newVolume) {
-      setVolume(newVolume);
-      audioRef.current.volume = newVolume || 0.01;
-    }
+  const onVolumeChange = (event, value) => {
+    // MUI Slider passes the value as the second argument, not event.target.value.
+    const newVolume = typeof value === "number" ? value : +event?.target?.value;
+    if (!Number.isFinite(newVolume)) return;
+    setVolume(newVolume);
+    if (audioRef.current) audioRef.current.volume = newVolume;
   };
 
   useEffect(() => {
