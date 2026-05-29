@@ -6,8 +6,9 @@
 
 .soundify-auth-theme {
   --sf-bg: #0b0913;
+  --sf-bg-2: #110d1c;
   --sf-surface: rgba(255, 255, 255, 0.045);
-  --sf-surface-strong: rgba(255, 255, 255, 0.07);
+  --sf-surface-strong: rgba(255, 255, 255, 0.08);
   --sf-border: rgba(255, 255, 255, 0.1);
   --sf-text: #f5f4f8;
   --sf-muted: #9a95ab;
@@ -26,14 +27,13 @@
     var(--sf-bg);
 }
 
-/* ---------- Navbar (scoped) ---------- */
+/* ---------- Navbar (scoped, landing only) ---------- */
 .soundify-auth-theme .navMain {
   background-color: transparent;
   background-image: none;
   box-shadow: none;
   border-bottom: 1px solid var(--sf-border);
 }
-/* Replace the raster logo with a clean gradient wordmark */
 .soundify-auth-theme .navMain .logo a img {
   display: none;
 }
@@ -53,7 +53,6 @@
   background-clip: text;
   color: transparent;
 }
-/* "Create account" button in the navbar */
 .soundify-auth-theme .navMain .nav-btn,
 .soundify-auth-theme .navMain .solid-btn {
   background: var(--sf-grad);
@@ -75,13 +74,13 @@
   content: "";
 }
 
-/* ---------- Shared button ---------- */
+/* ---------- Shared buttons ---------- */
 .soundify-auth-theme .sf-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 50px;
+  height: 52px;
   padding: 0 28px;
   border-radius: 999px;
   font-size: 1rem;
@@ -115,22 +114,12 @@
   width: 100%;
 }
 
-/* ---------- Landing / Hero ---------- */
-.soundify-auth-theme .landing-page-wrapper {
-  background: transparent;
-  min-height: calc(100vh - 90px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1.5rem 4rem;
-}
-.soundify-auth-theme .sf-hero {
-  width: 100%;
-  max-width: 880px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* shared gradient text + eyebrow pill */
+.soundify-auth-theme .sf-grad {
+  background: var(--sf-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .soundify-auth-theme .sf-eyebrow {
   display: inline-flex;
@@ -143,7 +132,6 @@
   color: var(--sf-muted);
   font-size: 0.82rem;
   font-weight: 500;
-  margin-bottom: 1.8rem;
 }
 .soundify-auth-theme .sf-eyebrow::before {
   content: "";
@@ -153,128 +141,287 @@
   background: var(--sf-accent-2);
   box-shadow: 0 0 12px 2px var(--sf-accent);
 }
-.soundify-auth-theme .sf-hero-title {
-  font-family: "Space Grotesk", sans-serif;
-  font-weight: 700;
-  font-size: clamp(2.4rem, 6vw, 4.4rem);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-  margin: 0 0 1.2rem;
-  color: var(--sf-text);
-}
-.soundify-auth-theme .sf-grad {
-  background: var(--sf-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.soundify-auth-theme .sf-hero-sub {
-  max-width: 560px;
-  font-size: clamp(1rem, 1.6vw, 1.2rem);
-  line-height: 1.6;
-  color: var(--sf-muted);
-  margin: 0 0 2.4rem;
-}
-.soundify-auth-theme .sf-hero-cta {
+
+/* ---------- Track card (reused visual element) ---------- */
+.soundify-auth-theme .sf-track-card {
   display: flex;
+  align-items: center;
   gap: 14px;
-  flex-wrap: wrap;
-  justify-content: center;
+  width: 300px;
+  padding: 13px;
+  border-radius: 16px;
+  background: rgba(20, 17, 31, 0.82);
+  border: 1px solid var(--sf-border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(14px);
 }
-/* Decorative animated equalizer bars */
-.soundify-auth-theme .sf-bars {
+.soundify-auth-theme .sf-art {
+  width: 54px;
+  height: 54px;
+  border-radius: 11px;
+  flex-shrink: 0;
+}
+.soundify-auth-theme .sf-art-1 { background: linear-gradient(135deg, #f472b6, #8b5cf6); }
+.soundify-auth-theme .sf-art-2 { background: linear-gradient(135deg, #6366f1, #22d3ee); }
+.soundify-auth-theme .sf-art-3 { background: linear-gradient(135deg, #a855f7, #f59e0b); }
+.soundify-auth-theme .sf-track-meta {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.soundify-auth-theme .sf-track-title {
+  font-weight: 600;
+  font-size: 0.94rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.soundify-auth-theme .sf-track-artist {
+  font-size: 0.8rem;
+  color: var(--sf-muted);
+}
+.soundify-auth-theme .sf-mini-eq {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
-  height: 60px;
-  margin-top: 3.2rem;
+  gap: 3px;
+  height: 22px;
 }
-.soundify-auth-theme .sf-bars span {
-  width: 6px;
-  border-radius: 6px;
-  background: var(--sf-grad);
-  opacity: 0.85;
-  animation: sf-bounce 1.1s ease-in-out infinite;
+.soundify-auth-theme .sf-mini-eq span {
+  width: 3px;
+  border-radius: 3px;
+  background: var(--sf-accent-2);
+  animation: sf-bounce 1s ease-in-out infinite;
 }
-.soundify-auth-theme .sf-bars span:nth-child(1) { height: 30%; animation-delay: 0s; }
-.soundify-auth-theme .sf-bars span:nth-child(2) { height: 65%; animation-delay: 0.15s; }
-.soundify-auth-theme .sf-bars span:nth-child(3) { height: 100%; animation-delay: 0.3s; }
-.soundify-auth-theme .sf-bars span:nth-child(4) { height: 50%; animation-delay: 0.45s; }
-.soundify-auth-theme .sf-bars span:nth-child(5) { height: 80%; animation-delay: 0.6s; }
-.soundify-auth-theme .sf-bars span:nth-child(6) { height: 40%; animation-delay: 0.75s; }
-.soundify-auth-theme .sf-bars span:nth-child(7) { height: 70%; animation-delay: 0.9s; }
+.soundify-auth-theme .sf-mini-eq span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.soundify-auth-theme .sf-mini-eq span:nth-child(2) { height: 90%; animation-delay: 0.2s; }
+.soundify-auth-theme .sf-mini-eq span:nth-child(3) { height: 60%; animation-delay: 0.4s; }
+.soundify-auth-theme .sf-mini-eq span:nth-child(4) { height: 100%; animation-delay: 0.6s; }
 @keyframes sf-bounce {
   0%, 100% { transform: scaleY(0.4); }
   50% { transform: scaleY(1); }
 }
 
-/* ---------- Auth (login / register) ---------- */
-.soundify-auth-theme .sf-auth {
+/* ============================================================
+   LANDING — two-column hero with floating track cards
+   ============================================================ */
+.soundify-auth-theme .landing-page-wrapper {
+  background: transparent;
+  display: block;
   min-height: calc(100vh - 90px);
+}
+.soundify-auth-theme .sf-landing {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 2rem;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1rem 2rem 4rem;
+  min-height: calc(100vh - 90px);
+}
+.soundify-auth-theme .sf-landing-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.soundify-auth-theme .sf-landing-copy .sf-eyebrow {
+  margin-bottom: 1.6rem;
+}
+.soundify-auth-theme .sf-display {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  margin: 0 0 1.3rem;
+  color: var(--sf-text);
+}
+.soundify-auth-theme .sf-lead {
+  max-width: 480px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--sf-muted);
+  margin: 0 0 2.2rem;
+}
+.soundify-auth-theme .sf-hero-cta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.soundify-auth-theme .sf-stats {
+  display: flex;
+  gap: 2.4rem;
+  margin-top: 3rem;
+}
+.soundify-auth-theme .sf-stats div {
+  display: flex;
+  flex-direction: column;
+}
+.soundify-auth-theme .sf-stats strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+.soundify-auth-theme .sf-stats span {
+  font-size: 0.8rem;
+  color: var(--sf-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+/* floating cards column */
+.soundify-auth-theme .sf-landing-visual {
+  position: relative;
+  height: 440px;
+}
+.soundify-auth-theme .sf-landing-visual .sf-track-card {
+  position: absolute;
+}
+.soundify-auth-theme .sf-card-1 {
+  top: 20px;
+  left: 10px;
+  animation: sf-float 6s ease-in-out infinite;
+}
+.soundify-auth-theme .sf-card-2 {
+  top: 175px;
+  right: 0;
+  animation: sf-float 6s ease-in-out infinite 1.2s;
+}
+.soundify-auth-theme .sf-card-3 {
+  top: 320px;
+  left: 50px;
+  animation: sf-float 6s ease-in-out infinite 2.4s;
+}
+@keyframes sf-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+@media (max-width: 900px) {
+  .soundify-auth-theme .sf-landing {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding-top: 2rem;
+  }
+  .soundify-auth-theme .sf-landing-copy {
+    align-items: center;
+  }
+  .soundify-auth-theme .sf-landing-visual {
+    display: none;
+  }
+}
+
+/* ============================================================
+   AUTH — split screen (brand panel + form panel)
+   ============================================================ */
+.soundify-auth-theme .sf-auth-split {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  min-height: 100vh;
+}
+.soundify-auth-theme .sf-auth-brand {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem;
+  background:
+    radial-gradient(700px 400px at 80% 10%, rgba(168, 85, 247, 0.35), transparent 60%),
+    linear-gradient(160deg, #2a1457 0%, #150f2b 55%, #0c0a16 100%);
+}
+.soundify-auth-theme .sf-brand-wordmark {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.soundify-auth-theme .sf-brand-mid {
+  max-width: 420px;
+}
+.soundify-auth-theme .sf-brand-tagline {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0 0 1.8rem;
+  color: #fff;
+}
+.soundify-auth-theme .sf-brand-feats {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.soundify-auth-theme .sf-brand-feats li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #d9d4ea;
+  font-size: 1rem;
+}
+.soundify-auth-theme .sf-brand-feats li::before {
+  content: "";
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23c4b5fd' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.soundify-auth-theme .sf-brand-card {
+  display: flex;
+}
+.soundify-auth-theme .sf-brand-card .sf-track-card {
+  animation: sf-float 6s ease-in-out infinite;
+}
+
+.soundify-auth-theme .sf-auth-panel {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.5rem 4rem;
+  padding: 2rem;
+  background: var(--sf-bg);
 }
-.soundify-auth-theme .sf-auth-card {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  padding: 2.6rem 2.2rem;
-  border-radius: var(--sf-radius);
-  background: rgba(20, 17, 31, 0.72);
-  border: 1px solid var(--sf-border);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(18px);
-}
-.soundify-auth-theme .sf-back {
+.soundify-auth-theme .sf-back-link {
   position: absolute;
-  top: 18px;
-  left: 18px;
-  width: 38px;
-  height: 38px;
+  top: 26px;
+  left: 26px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: var(--sf-surface);
-  border: 1px solid var(--sf-border);
+  gap: 6px;
   color: var(--sf-muted);
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
-.soundify-auth-theme .sf-back:hover {
-  color: var(--sf-text);
-  background: var(--sf-surface-strong);
-}
-.soundify-auth-theme .sf-auth-head {
-  text-align: center;
-  margin-bottom: 1.8rem;
-}
-.soundify-auth-theme .sf-wordmark {
-  font-family: "Space Grotesk", sans-serif;
-  font-weight: 700;
-  font-size: 1.2rem;
-  letter-spacing: -0.02em;
-  background: var(--sf-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  margin-bottom: 1.2rem;
-}
-.soundify-auth-theme .sf-auth-head h1 {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 1.9rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.4rem;
+.soundify-auth-theme .sf-back-link:hover {
   color: var(--sf-text);
 }
-.soundify-auth-theme .sf-auth-head p {
+.soundify-auth-theme .sf-form-wrap {
+  width: 100%;
+  max-width: 380px;
+}
+.soundify-auth-theme .sf-form-wrap h1 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.45rem;
+  color: var(--sf-text);
+}
+.soundify-auth-theme .sf-form-wrap > p {
   color: var(--sf-muted);
-  font-size: 0.95rem;
-  margin: 0;
+  font-size: 0.96rem;
+  margin: 0 0 2rem;
 }
 .soundify-auth-theme .sf-form {
   display: flex;
@@ -334,7 +481,6 @@
   margin: -6px 2px 0;
 }
 .soundify-auth-theme .sf-form .sf-btn-primary {
-  height: 52px;
   margin-top: 6px;
 }
 .soundify-auth-theme .sf-switch {
@@ -361,4 +507,12 @@
   border: 1px solid rgba(251, 113, 133, 0.35);
   color: var(--sf-danger);
   font-size: 0.88rem;
+}
+@media (max-width: 860px) {
+  .soundify-auth-theme .sf-auth-split {
+    grid-template-columns: 1fr;
+  }
+  .soundify-auth-theme .sf-auth-brand {
+    display: none;
+  }
 }

@@ -3,8 +3,8 @@ import { AuthContext } from "../context/authContext"
 import { useForm } from "../utils/hooks/hooks"
 import { useMutation } from "@apollo/react-hooks"
 import { message } from "antd"
-import { IoIosArrowBack } from "react-icons/io"
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
+import AuthShell from "../components/AuthShell"
 
 import { gql } from "graphql-tag"
 import { Link, useNavigate } from "react-router-dom"
@@ -51,90 +51,62 @@ function Login(props) {
         variables: { loginInput: values },
     })
 
-    const handleBackClick = () => {
-        navigate("/")
-    }
-
     return (
-        <div className="sf-auth">
-            <div className="sf-auth-card">
-                <button
-                    type="button"
-                    className="sf-back"
-                    onClick={handleBackClick}
-                    aria-label="Back to home"
-                >
-                    <IoIosArrowBack />
-                </button>
+        <AuthShell>
+            <h1>Welcome back</h1>
+            <p>Log in to keep listening.</p>
 
-                <div className="sf-auth-head">
-                    <div className="sf-wordmark">Soundify</div>
-                    <h1>Welcome back</h1>
-                    <p>Log in to keep listening.</p>
+            <form
+                className="sf-form"
+                autoComplete="off"
+                onSubmit={(e) => {
+                    e.preventDefault()
+                    onSubmit(e)
+                }}
+            >
+                <div className="sf-field">
+                    <input
+                        className="sf-input"
+                        placeholder="Email"
+                        name="email"
+                        type="email"
+                        onChange={onChange}
+                    />
                 </div>
 
-                <form
-                    className="sf-form"
-                    autoComplete="off"
-                    onSubmit={(e) => {
-                        e.preventDefault()
-                        onSubmit(e)
-                    }}
-                >
-                    <div className="sf-field">
-                        <input
-                            className="sf-input"
-                            placeholder="Email"
-                            name="email"
-                            type="email"
-                            onChange={onChange}
-                        />
-                    </div>
-
-                    <div className="sf-field sf-field-pw">
-                        <input
-                            className="sf-input"
-                            placeholder="Password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            onChange={onChange}
-                        />
-                        <button
-                            type="button"
-                            className="sf-eye"
-                            onClick={() => setShowPassword((s) => !s)}
-                            aria-label={
-                                showPassword ? "Hide password" : "Show password"
-                            }
-                        >
-                            {showPassword ? (
-                                <AiOutlineEyeInvisible />
-                            ) : (
-                                <AiOutlineEye />
-                            )}
-                        </button>
-                    </div>
-
+                <div className="sf-field sf-field-pw">
+                    <input
+                        className="sf-input"
+                        placeholder="Password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        onChange={onChange}
+                    />
                     <button
-                        className="sf-btn sf-btn-primary sf-btn-block"
-                        type="submit"
+                        type="button"
+                        className="sf-eye"
+                        onClick={() => setShowPassword((s) => !s)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                        {loading ? "Logging in..." : "Log in"}
+                        {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
                     </button>
+                </div>
 
-                    <p className="sf-switch">
-                        Don't have an account?{" "}
-                        <Link to="/register">Sign up</Link>
-                    </p>
+                <button className="sf-btn sf-btn-primary sf-btn-block" type="submit">
+                    {loading ? "Logging in..." : "Log in"}
+                </button>
 
-                    {errors.map((error, index) => (
-                        <div className="sf-error" key={index}>
-                            Something went wrong. Please try again.
-                        </div>
-                    ))}
-                </form>
-            </div>
-        </div>
+                <p className="sf-switch">
+                    Don't have an account? <Link to="/register">Sign up</Link>
+                </p>
+
+                {errors.map((error, index) => (
+                    <div className="sf-error" key={index}>
+                        Something went wrong. Please try again.
+                    </div>
+                ))}
+            </form>
+        </AuthShell>
     )
 }
 

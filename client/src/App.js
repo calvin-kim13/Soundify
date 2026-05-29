@@ -63,9 +63,11 @@ function App() {
   useEffect(() => {
     if (currentPlayer.current) currentPlayer.current.volume = volume;
   }, [volume]);
+  const hideNav = ["/login", "/register"].includes(location.pathname);
+
   return (
     <div className={!user ? "soundify-auth-theme" : ""}>
-      <Navbar setDashSearchResults={setDashSearchResults} />
+      {!hideNav && <Navbar setDashSearchResults={setDashSearchResults} />}
       <Routes>
         <Route
           path="/"
