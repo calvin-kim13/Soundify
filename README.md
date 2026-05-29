@@ -127,6 +127,16 @@ npm run dev
 - Client → http://localhost:3000
 - GraphQL API → http://localhost:4000/graphql
 
+### 4. (Optional) Seed demo data
+
+Populate the database with demo users and playable sample songs:
+
+```bash
+npm run seed
+```
+
+This creates four demo accounts (password `password123`) — `demo@demo.com`, `nova@demo.com`, `luna@demo.com`, `vertex@demo.com` — and ten songs spanning every genre. Existing accounts are preserved, and it's safe to re-run.
+
 ## Project Structure
 
 ```
