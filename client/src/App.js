@@ -8,6 +8,7 @@ import {
 } from "./pages";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import SongDetails from "./pages/SongDetails";
 import { AuthContext } from "./context/authContext";
 import { useContext, useEffect, useState, useRef } from "react";
@@ -66,10 +67,8 @@ function App() {
   }, [volume]);
   const hideNav = ["/login", "/register"].includes(location.pathname);
 
-  return (
-    <div className="sf-theme">
-      {!hideNav && <Navbar setDashSearchResults={setDashSearchResults} />}
-      <Routes>
+  const routes = (
+    <Routes>
         <Route
           path="/"
           element={
@@ -164,41 +163,55 @@ function App() {
             )
           }
         />
-      </Routes>
+    </Routes>
+  );
 
-      {user && (
-        <Footer
-          getSongInfo={getSongInfo}
-          setCurrentSong={setCurrentSong}
-          singlePL={singlePL}
-          trackProgress={trackProgress}
-          setTrackProgress={setTrackProgress}
-          songInfo={songInfo}
-          getTrackIndex={getTrackIndex}
-          trackIndex={trackIndex}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          currentPlayer={currentPlayer}
-          genreClickCount={genreClickCount}
-          prevCount={prevCount}
-          currentSong={currentSong}
-          oneSongClick={oneSongClick}
-          setOneSongClick={setOneSongClick}
-          volume={volume}
-          setVolume={setVolume}
-        />
-      )}
-      <div>
-        <div>
-          {" "}
-          <audio
-            id="audio-element"
-            crossOrigin="anonymous"
-            ref={currentPlayer}
-            src={currentSong}
-            allow="autoplay"
-          ></audio>
+  const player = (
+    <Footer
+      getSongInfo={getSongInfo}
+      setCurrentSong={setCurrentSong}
+      singlePL={singlePL}
+      trackProgress={trackProgress}
+      setTrackProgress={setTrackProgress}
+      songInfo={songInfo}
+      getTrackIndex={getTrackIndex}
+      trackIndex={trackIndex}
+      isPlaying={isPlaying}
+      setIsPlaying={setIsPlaying}
+      currentPlayer={currentPlayer}
+      genreClickCount={genreClickCount}
+      prevCount={prevCount}
+      currentSong={currentSong}
+      oneSongClick={oneSongClick}
+      setOneSongClick={setOneSongClick}
+      volume={volume}
+      setVolume={setVolume}
+    />
+  );
+
+  return (
+    <div className="sf-theme">
+      {user ? (
+        <div className="sf-shell">
+          <Sidebar />
+          <main className="sf-main">{routes}</main>
+          {player}
         </div>
+      ) : (
+        <>
+          {!hideNav && <Navbar setDashSearchResults={setDashSearchResults} />}
+          {routes}
+        </>
+      )}
+
+      <div className="sf-audio-host">
+        <audio
+          id="audio-element"
+          crossOrigin="anonymous"
+          ref={currentPlayer}
+          src={currentSong}
+          allow="autoplay"
+        ></audio>
       </div>
     </div>
   );
