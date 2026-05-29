@@ -246,7 +246,7 @@ const SongDetails = ({
     return (
         <div
             style={{
-                backgroundColor: "var(--light)",
+                backgroundColor: "transparent",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",

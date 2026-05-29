@@ -1,10 +1,10 @@
 /* ============================================================
    Soundify — dark/violet theme for the logged-out experience
-   (landing, login, register). Scoped under .soundify-auth-theme
+   (landing, login, register). Scoped under .sf-theme
    so the logged-in app is untouched.
    ============================================================ */
 
-.soundify-auth-theme {
+.sf-theme {
   --sf-bg: #0b0913;
   --sf-bg-2: #110d1c;
   --sf-surface: rgba(255, 255, 255, 0.045);
@@ -28,21 +28,21 @@
 }
 
 /* ---------- Navbar (scoped, landing only) ---------- */
-.soundify-auth-theme .navMain {
+.sf-theme .navMain {
   background-color: transparent;
   background-image: none;
   box-shadow: none;
   border-bottom: 1px solid var(--sf-border);
 }
-.soundify-auth-theme .navMain .logo a img {
+.sf-theme .navMain .logo a img {
   display: none;
 }
-.soundify-auth-theme .navMain .logo a {
+.sf-theme .navMain .logo a {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
 }
-.soundify-auth-theme .navMain .logo a::after {
+.sf-theme .navMain .logo a::after {
   content: "Soundify";
   font-family: "Space Grotesk", sans-serif;
   font-weight: 700;
@@ -53,8 +53,8 @@
   background-clip: text;
   color: transparent;
 }
-.soundify-auth-theme .navMain .nav-btn,
-.soundify-auth-theme .navMain .solid-btn {
+.sf-theme .navMain .nav-btn,
+.sf-theme .navMain .solid-btn {
   background: var(--sf-grad);
   color: #fff;
   border: none;
@@ -66,16 +66,16 @@
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.soundify-auth-theme .navMain .nav-btn:hover {
+.sf-theme .navMain .nav-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 12px 30px rgba(124, 58, 237, 0.5);
 }
-.soundify-auth-theme .navMain .nav-btn span:after {
+.sf-theme .navMain .nav-btn span:after {
   content: "";
 }
 
 /* ---------- Shared buttons ---------- */
-.soundify-auth-theme .sf-btn {
+.sf-theme .sf-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -91,37 +91,37 @@
   text-decoration: none;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
 }
-.soundify-auth-theme .sf-btn-primary {
+.sf-theme .sf-btn-primary {
   background: var(--sf-grad);
   color: #fff;
   box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
 }
-.soundify-auth-theme .sf-btn-primary:hover {
+.sf-theme .sf-btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 16px 40px rgba(124, 58, 237, 0.55);
 }
-.soundify-auth-theme .sf-btn-ghost {
+.sf-theme .sf-btn-ghost {
   background: var(--sf-surface);
   color: var(--sf-text);
   border: 1px solid var(--sf-border);
   backdrop-filter: blur(6px);
 }
-.soundify-auth-theme .sf-btn-ghost:hover {
+.sf-theme .sf-btn-ghost:hover {
   background: var(--sf-surface-strong);
   transform: translateY(-2px);
 }
-.soundify-auth-theme .sf-btn-block {
+.sf-theme .sf-btn-block {
   width: 100%;
 }
 
 /* shared gradient text + eyebrow pill */
-.soundify-auth-theme .sf-grad {
+.sf-theme .sf-grad {
   background: var(--sf-grad);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.soundify-auth-theme .sf-eyebrow {
+.sf-theme .sf-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -133,7 +133,7 @@
   font-size: 0.82rem;
   font-weight: 500;
 }
-.soundify-auth-theme .sf-eyebrow::before {
+.sf-theme .sf-eyebrow::before {
   content: "";
   width: 8px;
   height: 8px;
@@ -143,7 +143,7 @@
 }
 
 /* ---------- Track card (reused visual element) ---------- */
-.soundify-auth-theme .sf-track-card {
+.sf-theme .sf-track-card {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -155,48 +155,48 @@
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(14px);
 }
-.soundify-auth-theme .sf-art {
+.sf-theme .sf-art {
   width: 54px;
   height: 54px;
   border-radius: 11px;
   flex-shrink: 0;
 }
-.soundify-auth-theme .sf-art-1 { background: linear-gradient(135deg, #f472b6, #8b5cf6); }
-.soundify-auth-theme .sf-art-2 { background: linear-gradient(135deg, #6366f1, #22d3ee); }
-.soundify-auth-theme .sf-art-3 { background: linear-gradient(135deg, #a855f7, #f59e0b); }
-.soundify-auth-theme .sf-track-meta {
+.sf-theme .sf-art-1 { background: linear-gradient(135deg, #f472b6, #8b5cf6); }
+.sf-theme .sf-art-2 { background: linear-gradient(135deg, #6366f1, #22d3ee); }
+.sf-theme .sf-art-3 { background: linear-gradient(135deg, #a855f7, #f59e0b); }
+.sf-theme .sf-track-meta {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
 }
-.soundify-auth-theme .sf-track-title {
+.sf-theme .sf-track-title {
   font-weight: 600;
   font-size: 0.94rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.soundify-auth-theme .sf-track-artist {
+.sf-theme .sf-track-artist {
   font-size: 0.8rem;
   color: var(--sf-muted);
 }
-.soundify-auth-theme .sf-mini-eq {
+.sf-theme .sf-mini-eq {
   display: flex;
   align-items: flex-end;
   gap: 3px;
   height: 22px;
 }
-.soundify-auth-theme .sf-mini-eq span {
+.sf-theme .sf-mini-eq span {
   width: 3px;
   border-radius: 3px;
   background: var(--sf-accent-2);
   animation: sf-bounce 1s ease-in-out infinite;
 }
-.soundify-auth-theme .sf-mini-eq span:nth-child(1) { height: 40%; animation-delay: 0s; }
-.soundify-auth-theme .sf-mini-eq span:nth-child(2) { height: 90%; animation-delay: 0.2s; }
-.soundify-auth-theme .sf-mini-eq span:nth-child(3) { height: 60%; animation-delay: 0.4s; }
-.soundify-auth-theme .sf-mini-eq span:nth-child(4) { height: 100%; animation-delay: 0.6s; }
+.sf-theme .sf-mini-eq span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.sf-theme .sf-mini-eq span:nth-child(2) { height: 90%; animation-delay: 0.2s; }
+.sf-theme .sf-mini-eq span:nth-child(3) { height: 60%; animation-delay: 0.4s; }
+.sf-theme .sf-mini-eq span:nth-child(4) { height: 100%; animation-delay: 0.6s; }
 @keyframes sf-bounce {
   0%, 100% { transform: scaleY(0.4); }
   50% { transform: scaleY(1); }
@@ -205,12 +205,12 @@
 /* ============================================================
    LANDING — two-column hero with floating track cards
    ============================================================ */
-.soundify-auth-theme .landing-page-wrapper {
+.sf-theme .landing-page-wrapper {
   background: transparent;
   display: block;
   min-height: calc(100vh - 90px);
 }
-.soundify-auth-theme .sf-landing {
+.sf-theme .sf-landing {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   align-items: center;
@@ -220,15 +220,15 @@
   padding: 1rem 2rem 4rem;
   min-height: calc(100vh - 90px);
 }
-.soundify-auth-theme .sf-landing-copy {
+.sf-theme .sf-landing-copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
-.soundify-auth-theme .sf-landing-copy .sf-eyebrow {
+.sf-theme .sf-landing-copy .sf-eyebrow {
   margin-bottom: 1.6rem;
 }
-.soundify-auth-theme .sf-display {
+.sf-theme .sf-display {
   font-family: "Space Grotesk", sans-serif;
   font-weight: 700;
   font-size: clamp(2.8rem, 6vw, 5rem);
@@ -237,57 +237,57 @@
   margin: 0 0 1.3rem;
   color: var(--sf-text);
 }
-.soundify-auth-theme .sf-lead {
+.sf-theme .sf-lead {
   max-width: 480px;
   font-size: 1.1rem;
   line-height: 1.6;
   color: var(--sf-muted);
   margin: 0 0 2.2rem;
 }
-.soundify-auth-theme .sf-hero-cta {
+.sf-theme .sf-hero-cta {
   display: flex;
   gap: 14px;
   flex-wrap: wrap;
 }
-.soundify-auth-theme .sf-stats {
+.sf-theme .sf-stats {
   display: flex;
   gap: 2.4rem;
   margin-top: 3rem;
 }
-.soundify-auth-theme .sf-stats div {
+.sf-theme .sf-stats div {
   display: flex;
   flex-direction: column;
 }
-.soundify-auth-theme .sf-stats strong {
+.sf-theme .sf-stats strong {
   font-family: "Space Grotesk", sans-serif;
   font-size: 1.7rem;
   font-weight: 700;
 }
-.soundify-auth-theme .sf-stats span {
+.sf-theme .sf-stats span {
   font-size: 0.8rem;
   color: var(--sf-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 /* floating cards column */
-.soundify-auth-theme .sf-landing-visual {
+.sf-theme .sf-landing-visual {
   position: relative;
   height: 440px;
 }
-.soundify-auth-theme .sf-landing-visual .sf-track-card {
+.sf-theme .sf-landing-visual .sf-track-card {
   position: absolute;
 }
-.soundify-auth-theme .sf-card-1 {
+.sf-theme .sf-card-1 {
   top: 20px;
   left: 10px;
   animation: sf-float 6s ease-in-out infinite;
 }
-.soundify-auth-theme .sf-card-2 {
+.sf-theme .sf-card-2 {
   top: 175px;
   right: 0;
   animation: sf-float 6s ease-in-out infinite 1.2s;
 }
-.soundify-auth-theme .sf-card-3 {
+.sf-theme .sf-card-3 {
   top: 320px;
   left: 50px;
   animation: sf-float 6s ease-in-out infinite 2.4s;
@@ -297,15 +297,15 @@
   50% { transform: translateY(-16px); }
 }
 @media (max-width: 900px) {
-  .soundify-auth-theme .sf-landing {
+  .sf-theme .sf-landing {
     grid-template-columns: 1fr;
     text-align: center;
     padding-top: 2rem;
   }
-  .soundify-auth-theme .sf-landing-copy {
+  .sf-theme .sf-landing-copy {
     align-items: center;
   }
-  .soundify-auth-theme .sf-landing-visual {
+  .sf-theme .sf-landing-visual {
     display: none;
   }
 }
@@ -313,12 +313,12 @@
 /* ============================================================
    AUTH — split screen (brand panel + form panel)
    ============================================================ */
-.soundify-auth-theme .sf-auth-split {
+.sf-theme .sf-auth-split {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
   min-height: 100vh;
 }
-.soundify-auth-theme .sf-auth-brand {
+.sf-theme .sf-auth-brand {
   position: relative;
   overflow: hidden;
   display: flex;
@@ -329,17 +329,17 @@
     radial-gradient(700px 400px at 80% 10%, rgba(168, 85, 247, 0.35), transparent 60%),
     linear-gradient(160deg, #2a1457 0%, #150f2b 55%, #0c0a16 100%);
 }
-.soundify-auth-theme .sf-brand-wordmark {
+.sf-theme .sf-brand-wordmark {
   font-family: "Space Grotesk", sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
   letter-spacing: -0.02em;
   color: #fff;
 }
-.soundify-auth-theme .sf-brand-mid {
+.sf-theme .sf-brand-mid {
   max-width: 420px;
 }
-.soundify-auth-theme .sf-brand-tagline {
+.sf-theme .sf-brand-tagline {
   font-family: "Space Grotesk", sans-serif;
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   font-weight: 700;
@@ -348,7 +348,7 @@
   margin: 0 0 1.8rem;
   color: #fff;
 }
-.soundify-auth-theme .sf-brand-feats {
+.sf-theme .sf-brand-feats {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -356,14 +356,14 @@
   flex-direction: column;
   gap: 14px;
 }
-.soundify-auth-theme .sf-brand-feats li {
+.sf-theme .sf-brand-feats li {
   display: flex;
   align-items: center;
   gap: 12px;
   color: #d9d4ea;
   font-size: 1rem;
 }
-.soundify-auth-theme .sf-brand-feats li::before {
+.sf-theme .sf-brand-feats li::before {
   content: "";
   width: 26px;
   height: 26px;
@@ -375,14 +375,14 @@
   background-repeat: no-repeat;
   background-position: center;
 }
-.soundify-auth-theme .sf-brand-card {
+.sf-theme .sf-brand-card {
   display: flex;
 }
-.soundify-auth-theme .sf-brand-card .sf-track-card {
+.sf-theme .sf-brand-card .sf-track-card {
   animation: sf-float 6s ease-in-out infinite;
 }
 
-.soundify-auth-theme .sf-auth-panel {
+.sf-theme .sf-auth-panel {
   position: relative;
   display: flex;
   align-items: center;
@@ -390,7 +390,7 @@
   padding: 2rem;
   background: var(--sf-bg);
 }
-.soundify-auth-theme .sf-back-link {
+.sf-theme .sf-back-link {
   position: absolute;
   top: 26px;
   left: 26px;
@@ -403,14 +403,14 @@
   font-weight: 500;
   transition: color 0.15s ease;
 }
-.soundify-auth-theme .sf-back-link:hover {
+.sf-theme .sf-back-link:hover {
   color: var(--sf-text);
 }
-.soundify-auth-theme .sf-form-wrap {
+.sf-theme .sf-form-wrap {
   width: 100%;
   max-width: 380px;
 }
-.soundify-auth-theme .sf-form-wrap h1 {
+.sf-theme .sf-form-wrap h1 {
   font-family: "Space Grotesk", sans-serif;
   font-size: 2rem;
   font-weight: 700;
@@ -418,20 +418,20 @@
   margin: 0 0 0.45rem;
   color: var(--sf-text);
 }
-.soundify-auth-theme .sf-form-wrap > p {
+.sf-theme .sf-form-wrap > p {
   color: var(--sf-muted);
   font-size: 0.96rem;
   margin: 0 0 2rem;
 }
-.soundify-auth-theme .sf-form {
+.sf-theme .sf-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-.soundify-auth-theme .sf-field {
+.sf-theme .sf-field {
   position: relative;
 }
-.soundify-auth-theme .sf-input {
+.sf-theme .sf-input {
   width: 100%;
   height: 52px;
   padding: 0 16px;
@@ -444,18 +444,18 @@
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-.soundify-auth-theme .sf-input::placeholder {
+.sf-theme .sf-input::placeholder {
   color: var(--sf-muted);
 }
-.soundify-auth-theme .sf-input:focus {
+.sf-theme .sf-input:focus {
   border-color: var(--sf-accent);
   background: var(--sf-surface-strong);
   box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.18);
 }
-.soundify-auth-theme .sf-field-pw .sf-input {
+.sf-theme .sf-field-pw .sf-input {
   padding-right: 48px;
 }
-.soundify-auth-theme .sf-eye {
+.sf-theme .sf-eye {
   position: absolute;
   right: 8px;
   top: 50%;
@@ -472,32 +472,32 @@
   cursor: pointer;
   border-radius: 8px;
 }
-.soundify-auth-theme .sf-eye:hover {
+.sf-theme .sf-eye:hover {
   color: var(--sf-text);
 }
-.soundify-auth-theme .sf-hint {
+.sf-theme .sf-hint {
   font-size: 0.78rem;
   color: var(--sf-muted);
   margin: -6px 2px 0;
 }
-.soundify-auth-theme .sf-form .sf-btn-primary {
+.sf-theme .sf-form .sf-btn-primary {
   margin-top: 6px;
 }
-.soundify-auth-theme .sf-switch {
+.sf-theme .sf-switch {
   text-align: center;
   color: var(--sf-muted);
   font-size: 0.92rem;
   margin: 0.6rem 0 0;
 }
-.soundify-auth-theme .sf-switch a {
+.sf-theme .sf-switch a {
   color: var(--sf-accent-2);
   font-weight: 600;
   text-decoration: none;
 }
-.soundify-auth-theme .sf-switch a:hover {
+.sf-theme .sf-switch a:hover {
   text-decoration: underline;
 }
-.soundify-auth-theme .sf-error {
+.sf-theme .sf-error {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -509,10 +509,10 @@
   font-size: 0.88rem;
 }
 @media (max-width: 860px) {
-  .soundify-auth-theme .sf-auth-split {
+  .sf-theme .sf-auth-split {
     grid-template-columns: 1fr;
   }
-  .soundify-auth-theme .sf-auth-brand {
+  .sf-theme .sf-auth-brand {
     display: none;
   }
 }

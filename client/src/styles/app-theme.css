@@ -1,0 +1,391 @@
+/* ============================================================
+   Soundify — dark/violet theme for the LOGGED-IN app surfaces.
+   Companion to auth-theme.css (which holds tokens + landing/auth).
+   Everything is scoped under .sf-theme (always applied in App.js),
+   plus antd component overrides which render in portals on <body>.
+   ============================================================ */
+
+/* Kill the old light page background everywhere */
+body {
+  background: #0b0913 !important;
+  color: #f5f4f8;
+}
+
+.sf-theme {
+  /* let inner pages own their padding; theme bg comes from auth-theme .sf-theme */
+}
+
+.sf-theme ::selection {
+  background: rgba(139, 92, 246, 0.35);
+}
+
+/* Headings inherit light (antd resets them dark) */
+.sf-theme h1,
+.sf-theme h2,
+.sf-theme h3,
+.sf-theme h4,
+.sf-theme h5 {
+  color: var(--sf-text);
+}
+
+/* Scrollbar */
+.sf-theme ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.sf-theme ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+.sf-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================================
+   NAVBAR (logged-in)
+   ============================================================ */
+.sf-theme .navMain {
+  background: rgba(11, 9, 19, 0.7) !important;
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--sf-border);
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+.sf-theme .ul-container li,
+.sf-theme .upload a,
+.sf-theme .nav-link,
+.sf-theme .profile,
+.sf-theme .dropdown {
+  color: var(--sf-text) !important;
+}
+.sf-theme .upload a:hover,
+.sf-theme .nav-link:hover {
+  color: var(--sf-accent-2) !important;
+}
+/* search box */
+.sf-theme .searchContainer input,
+.sf-theme .searchContainer .ant-input,
+.sf-theme .searchContainer .ant-input-affix-wrapper {
+  background: var(--sf-surface) !important;
+  border: 1px solid var(--sf-border) !important;
+  color: var(--sf-text) !important;
+  border-radius: 999px !important;
+}
+.sf-theme .searchContainer input::placeholder {
+  color: var(--sf-muted) !important;
+}
+.sf-theme .searchContainer .ant-input-search-button,
+.sf-theme .searchContainer .ant-btn {
+  background: var(--sf-surface) !important;
+  border: 1px solid var(--sf-border) !important;
+  color: var(--sf-text) !important;
+}
+/* profile dropdown trigger */
+.sf-theme .dropdown {
+  background: var(--sf-surface);
+  border: 1px solid var(--sf-border);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+.sf-theme .dropdown:hover {
+  background: var(--sf-surface-strong);
+}
+/* hamburger / mobile drawer links */
+.sf-theme .hamburger-menu {
+  color: var(--sf-text);
+}
+.sf-theme .drawer-links .nav-link {
+  color: var(--sf-text) !important;
+}
+
+/* ============================================================
+   FOOTER PLAYER
+   ============================================================ */
+.sf-theme .footer-audio-player {
+  background: rgba(17, 13, 28, 0.92) !important;
+  border-top: 1px solid var(--sf-border);
+  backdrop-filter: blur(16px);
+  color: var(--sf-text);
+}
+.sf-theme .footer-audio-controls button {
+  color: var(--sf-text) !important;
+  background-color: transparent !important;
+}
+.sf-theme .footer-audio-controls button:hover {
+  color: var(--sf-accent-2) !important;
+}
+.sf-theme .footer-title,
+.sf-theme .musicianTrack h2 {
+  color: var(--sf-text) !important;
+}
+.sf-theme .footer-artist,
+.sf-theme .musicianTrack h3 {
+  color: var(--sf-muted) !important;
+}
+/* progress + volume range inputs */
+.sf-theme input[type="range"] {
+  accent-color: var(--sf-accent);
+}
+.sf-theme .footer-progress {
+  height: 4px;
+  border-radius: 4px;
+}
+/* MUI volume slider */
+.sf-theme .MuiSlider-root {
+  color: var(--sf-accent) !important;
+}
+.sf-theme .MuiSvgIcon-root {
+  color: var(--sf-muted);
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.sf-theme .dashboard-page {
+  background-color: transparent !important;
+  color: var(--sf-text) !important;
+  padding-bottom: 120px;
+}
+.sf-theme .dashboard-text-container h2 {
+  color: var(--sf-text) !important;
+}
+.sf-theme .dashboard-text-container p {
+  color: var(--sf-muted) !important;
+}
+.sf-theme .dashboard-song-cover {
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+}
+.sf-theme .dashboard-song-title {
+  color: var(--sf-text) !important;
+  font-weight: 600;
+}
+.sf-theme .dashboard-song-title:hover {
+  color: var(--sf-accent-2) !important;
+}
+.sf-theme .dashboard-song-artist,
+.sf-theme .dashboard-user-username {
+  color: var(--sf-muted) !important;
+}
+/* swiper arrows -> dark glass circles */
+.sf-theme .swiper-button-prev,
+.sf-theme .swiper-button-next {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--sf-border);
+  color: var(--sf-text) !important;
+  border-radius: 50%;
+  backdrop-filter: blur(6px);
+}
+
+/* ============================================================
+   SONG DETAILS
+   ============================================================ */
+.sf-theme .comment-area {
+  background-color: transparent !important;
+}
+.sf-theme .comment-details {
+  background: var(--sf-surface) !important;
+  border: 1px solid var(--sf-border);
+  border-radius: 16px;
+}
+.sf-theme .recommended {
+  background: var(--sf-surface) !important;
+  border: 1px solid var(--sf-border);
+  border-radius: 16px;
+}
+.sf-theme .detail-comment {
+  background: var(--sf-surface) !important;
+  border: 1px solid var(--sf-border) !important;
+  color: var(--sf-text) !important;
+  border-radius: 12px;
+}
+.sf-theme .detail-comment::placeholder {
+  color: var(--sf-muted);
+}
+.sf-theme .detail-comment-btn {
+  background: var(--sf-grad) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px;
+}
+.sf-theme .detail-more-btn {
+  background: var(--sf-surface) !important;
+  border: 1px solid var(--sf-border) !important;
+  color: var(--sf-text) !important;
+  border-radius: 999px;
+}
+.sf-theme .detail-more-btn:hover {
+  background: var(--sf-surface-strong) !important;
+}
+.sf-theme .rec-song:hover {
+  background-color: var(--sf-surface-strong) !important;
+}
+.sf-theme .rec-artist {
+  color: var(--sf-muted) !important;
+}
+/* create / add to playlist modal contents */
+.sf-theme .create-playlist {
+  background: var(--sf-grad) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 10px;
+}
+.sf-theme .create-playlistinput {
+  background: var(--sf-surface) !important;
+  border: 1px solid var(--sf-border) !important;
+  color: var(--sf-text) !important;
+  border-radius: 10px;
+}
+.sf-theme .add-playlist:hover {
+  background: var(--sf-surface-strong) !important;
+}
+
+/* waveform play button (Wavesurfer.styled) */
+.sf-theme .controls button,
+.sf-theme #waveform + p {
+  color: var(--sf-text);
+}
+
+/* ============================================================
+   GENERIC: anything still painted white -> dark surface
+   ============================================================ */
+.sf-theme .comment-details,
+.sf-theme .recommended,
+.sf-theme .demo-loadmore-list {
+  color: var(--sf-text);
+}
+
+/* ============================================================
+   ANT DESIGN OVERRIDES (portals render on <body>, so unscoped)
+   ============================================================ */
+/* Modals */
+.ant-modal-content {
+  background: #16121f !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6) !important;
+  overflow: hidden;
+}
+.ant-modal-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.ant-modal-title {
+  color: #f5f4f8 !important;
+  font-family: "Space Grotesk", sans-serif;
+}
+.ant-modal-body {
+  color: #d9d4ea !important;
+}
+.ant-modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+.ant-modal-close-icon {
+  color: #9a95ab !important;
+}
+.ant-modal-confirm-content,
+.ant-modal-confirm-title {
+  color: #f5f4f8 !important;
+}
+
+/* Inputs / Select */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-password,
+.ant-select-selector,
+.ant-input-number {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f5f4f8 !important;
+  border-radius: 10px !important;
+}
+.ant-input::placeholder {
+  color: #9a95ab !important;
+}
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18) !important;
+}
+.ant-select-dropdown {
+  background: #16121f !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ant-select-item {
+  color: #d9d4ea !important;
+}
+.ant-select-item-option-active,
+.ant-select-item-option-selected {
+  background: rgba(139, 92, 246, 0.2) !important;
+}
+.ant-select-arrow,
+.ant-input-password-icon {
+  color: #9a95ab !important;
+}
+
+/* Buttons (antd) */
+.ant-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f5f4f8;
+  border-radius: 999px;
+}
+.ant-btn-primary {
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
+  border: none;
+}
+
+/* Lists (comments, playlists) */
+.ant-list,
+.ant-list-item,
+.ant-list-item-meta-title,
+.ant-list-item-meta-description,
+.ant-list-header,
+.ant-list-bordered {
+  color: #f5f4f8 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+.ant-list-item-meta-description {
+  color: #9a95ab !important;
+}
+
+/* Drawer (mobile nav) */
+.ant-drawer-content,
+.ant-drawer-header {
+  background: #110d1c !important;
+  color: #f5f4f8 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.ant-drawer-title,
+.ant-drawer-close {
+  color: #f5f4f8 !important;
+}
+
+/* Tabs, PageHeader, Empty */
+.ant-tabs,
+.ant-page-header-heading-title,
+.ant-empty-description {
+  color: #f5f4f8 !important;
+}
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #a78bfa !important;
+}
+.ant-tabs-ink-bar {
+  background: #8b5cf6 !important;
+}
+
+/* Toast messages */
+.ant-message-notice-content,
+.ant-notification-notice {
+  background: #16121f !important;
+  color: #f5f4f8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Avatars keep a violet tint when empty */
+.ant-avatar {
+  background: linear-gradient(135deg, #a855f7, #6366f1) !important;
+  color: #fff !important;
+}

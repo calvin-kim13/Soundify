@@ -14,6 +14,7 @@ import { useContext, useEffect, useState, useRef } from "react";
 import Footer from "./components/Footer";
 import DashResults from "./components/Dashboard/DashResults";
 import "./styles/auth-theme.css";
+import "./styles/app-theme.css";
 
 function App() {
   const [genreClickCount, setGenreClickCount] = useState(0);
@@ -66,7 +67,7 @@ function App() {
   const hideNav = ["/login", "/register"].includes(location.pathname);
 
   return (
-    <div className={!user ? "soundify-auth-theme" : ""}>
+    <div className="sf-theme">
       {!hideNav && <Navbar setDashSearchResults={setDashSearchResults} />}
       <Routes>
         <Route
