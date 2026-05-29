@@ -1,164 +1,169 @@
-# Soundify - Group project-3
+<div align="center">
 
-<br>
+# 🎵 Soundify
 
-## Description:
+**A full-stack music streaming app — a SoundCloud-style clone.**
 
----
+Create an account, upload your own tracks, browse by genre, build playlists, and comment on songs — with a persistent audio player that follows you across every page.
 
-Soundify is a online music player where users are required to create an account or login to our site to listen, upload, and comment on songs. Users will be allowed to either login or create a new & unique username and password in order to enter. After entering, users can listen to 3 seperate music cards on their dashboard. Users can also pick preselected genres to listen to. The user may use the search bar to search for song titles or artist names. At the bottom of the page is a interactive sound bar for users to listen to music regardless of which page they are on. The user can also upload songs by clicking "Upload". Next, the user will have to enter song title, artist name, and genre. Then the user will have to click or drag the music file to upload. The user will also be able to view their uploaded songs on this page. To view their playlist, users must click on the nav bar and click on "My Playlists". The user can then view thier playlist and the songs within. The user can click on the individual song and it will update and play on the music card. If the user wishes they can delete songs from the playlist by click the red "X" next to the song of their choice. Furthermore, users can log out of the site and still retain all the songs they downloaded. Whenever a user re-logs in to our site, the songs they have downloaded will still be on their account.
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4-000000?logo=express&logoColor=white)
+![GraphQL](https://img.shields.io/badge/GraphQL-Apollo-E10098?logo=graphql&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb&logoColor=white)
 
-<br>
-
-## User Story:
-
----
-
-I love listening to music but I hate all the hoops I have to jump through to create an account on a major music playing platform. I have a lot of music and would love to create a personal playlist for those songs but I dont want to spend money. I want a application that I can login and upload all my favorite songs and create a playlist. I want to be able to view other peoples playlists. Other people can go to my uploaded songs or playlist and comment on them. If I decide I dont want a song anymore I want to be able to delete the song.
-
-<br>
-
-## Acceptance Criteria:
+</div>
 
 ---
 
--   Users must create a original username and password in order to login to our web application.
-    <br>
+## Overview
 
--   Users must use username, email, and password to create a account.
-    <br>
+Soundify is a [MERN](https://www.mongodb.com/mern-stack) application (MongoDB, Express, React, Node) with a GraphQL API. Users register and log in, upload audio files with cover art, search by song or artist, organize tracks into playlists, and leave comments. A bottom-docked audio player keeps playing as you navigate.
 
--   Users can listen to music from 3 differnt music cards on the users dashboard.
-    <br>
+> Originally built in 2022 as a five-person group project, since revived to run on a modern Node toolchain with MongoDB Atlas and local-disk file storage.
 
--   Users can play music by choosing from preselected genres.
-    <br>
+## Features
 
--   Users can search song titles and artist names.
-    <br>
+- 🔐 **Authentication** — register / log in, with JWT sessions and bcrypt-hashed passwords
+- ⬆️ **Uploads** — add songs with title, artist, genre, and cover art
+- 🔎 **Search & browse** — find tracks by title or artist, or explore by genre
+- 🎧 **Persistent player** — playback continues across page navigation (waveform + spectrum visualizers)
+- 📂 **Playlists** — group songs and play through them
+- 💬 **Comments** — discuss individual tracks
 
--   Users can upload songs by entering the song name, artist name, genre, and the music file.
-    <br>
+## Screenshots
 
--   Users can delete songs from playlists.
-    <br>
+| Landing | Dashboard |
+|---|---|
+| ![Landing page](client/src/assets/soundify-landing.png) | ![Dashboard](client/src/assets/soundify-better.png) |
 
--   Users can create a playlist with songs they have uploaded or by others.
-    <br>
+| Upload | Song detail |
+|---|---|
+| ![Upload](client/src/assets/soundify-upload.png) | ![Song detail](client/src/assets/soundify-song.png) |
 
--   Users can log out and all their songs and playlist will be saved to their account.
+## Architecture
 
-<br>
+The app runs as two processes in development, launched together by `npm run dev`. The React client talks to a single Express server that exposes **GraphQL** for structured data and a small **REST** surface for binary file uploads. Data lives in **MongoDB Atlas**; uploaded files live on **local disk** and are served back as static URLs.
 
-## Table of Contents:
+```mermaid
+flowchart TD
+    subgraph dev["🧑‍💻 Local dev — npm run dev (concurrently)"]
+        direction LR
+        subgraph client["Client · localhost:3000"]
+            React["React 18 SPA<br/>Create React App<br/>MUI · Ant Design · SCSS<br/>react-player / wavesurfer"]
+            ApolloC["Apollo Client"]
+            React --- ApolloC
+        end
+        subgraph server["Server · localhost:4000 · Express (nodemon)"]
+            GQL["Apollo Server<br/>GraphQL — /graphql"]
+            RESTu["REST — /upload<br/>(Multer)"]
+            Static["Static — /uploads"]
+            JWT["JWT auth middleware<br/>jsonwebtoken · bcryptjs"]
+        end
+    end
 
----
+    Atlas[("MongoDB Atlas<br/>users · songs · playlists")]
+    Disk["📁 server/uploads<br/>audio + cover files"]
 
--   [Soundify - Group project-3](#soundify---group-project-3)
-    -   [Description:](#description)
-    -   [User Story:](#user-story)
-    -   [Acceptance Criteria:](#acceptance-criteria)
-    -   [Table of Contents:](#table-of-contents)
-    -   [Digital Ocean:](#digital-ocean)
-    -   [Installation:](#installation)
-    -   [Usage:](#usage)
-    -   [Contribute:](#contribute)
-    -   [Details:](#details)
-    -   [URL:](#url)
-    -   [Authors:](#authors)
-    -   [Credits:](#credits)
+    ApolloC -- "queries & mutations (+ JWT)" --> GQL
+    ApolloC -- "multipart file upload" --> RESTu
+    React -- "GET audio / cover URL" --> Static
+    GQL --> JWT
+    GQL <-- "Mongoose" --> Atlas
+    RESTu -- "write file" --> Disk
+    RESTu -- "save Song document" --> Atlas
+    Static -- "read file" --> Disk
+```
 
-<br>
+**Why two API styles?** GraphQL handles all structured data cleanly, but it isn't well-suited to raw binary file uploads — so song/cover uploads use a dedicated REST endpoint (`/upload`) with Multer, and the resulting files are served statically from `/uploads`.
 
-## Digital Ocean:
+## Tech Stack
 
----
+| Layer | Tools |
+|---|---|
+| **Client** | React 18, Create React App, Apollo Client, MUI, Ant Design, styled-components / SCSS, react-router, react-player, wavesurfer.js |
+| **Server** | Node.js, Express, Apollo Server (GraphQL), Multer |
+| **Database** | MongoDB Atlas via Mongoose |
+| **Auth** | JSON Web Tokens, bcryptjs |
+| **Storage** | Local disk (`server/uploads`), served via Express static |
+| **Dev tooling** | concurrently, nodemon |
 
-[Deployed Application](https://www.soundify.live/)
+## Getting Started
 
-<br>
+### Prerequisites
 
-## Installation:
+- **Node.js 18+** (an `.nvmrc` pins 18; Node 22 also works) — `nvm use`
+- A **MongoDB Atlas** connection string (free tier is fine)
 
----
+### 1. Install
 
-Go to the github link provided below and clone the repository. In VSC open terminal and use command "npm start" and then run "npm run dev" to view webpage.
+```bash
+git clone https://github.com/calvin-kim13/Soundify.git
+cd Soundify
+npm run install   # installs both server and client dependencies
+```
 
-<br>
+### 2. Configure environment
 
-## Usage:
+Copy the example and fill in your values:
 
----
+```bash
+cp server/.env.example server/.env
+```
 
-[Screenshot1] Landing Page: Nav bar with logo and Create account feature. Short description with Register and Login feature.
-<img src="./client/src/assets/soundify-landing.png">
+| Variable | Description |
+|---|---|
+| `MONGO_URL` | MongoDB Atlas connection string |
+| `JWT_SECRET` | Secret for signing tokens — generate with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
+| `PORT` | API server port (default `4000`) |
+| `SERVER_URL` | *(optional)* base URL used to build file links; defaults to `http://localhost:PORT` |
 
-<br>
+### 3. Run
 
-[Screenshot2] Register: Create username, email, and password to register account.
-<img src="./client/src/assets/soundify-register.png">
+```bash
+npm run dev
+```
 
-<br>
+- Client → http://localhost:3000
+- GraphQL API → http://localhost:4000/graphql
 
-[Screenshot3] Login: Enter email and password to login to account.
-<img src="./client/src/assets/soundify-login.png">
+## Project Structure
 
-<br>
+```
+Soundify/
+├── client/                 # React SPA (Create React App)
+│   └── src/
+│       ├── components/      # UI + audio player
+│       ├── pages/           # routed views (Login, Dashboard, Playlists, …)
+│       └── utils/           # Apollo queries, mutations, hooks
+└── server/                 # Express + Apollo backend
+    ├── schema/             # GraphQL typeDefs + resolvers
+    ├── models/             # Mongoose models (User, Songs, Playlists)
+    ├── routes/             # REST routes (file upload, etc.)
+    ├── S3Service/          # file-storage layer (local disk)
+    ├── utils/              # JWT auth middleware
+    └── uploads/            # uploaded files (gitignored, created at runtime)
+```
 
-[Screenshot4] Dashboard: User is greated at dashboard and can upload or listen to songs on dashboard. User can search for individual songs or choose from a variety of genres.
-<img src="./client/src/assets/soundify-better.png">
+## How It Works
 
-<br>
+**Register / log in**
+> Client sends a GraphQL mutation → resolver hashes/verifies the password (bcrypt) → signs a JWT → client stores it in `localStorage` and attaches it as the `Authorization` header → the auth middleware verifies it on each request.
 
-[Screenshot5] Upload: User can click on upload in the nav bar and will be prompted with a page to enter a song title, artist, and genre. They can then click or drag to a area to upload a file.
-<img src="./client/src/assets/soundify-upload.png">
+**Upload a song**
+> Client POSTs a multipart form to `/upload` → Multer reads the file into memory → the storage layer writes it to `server/uploads/` → a `Song` document is created in MongoDB and linked to the user.
 
-<br>
+**Browse & play**
+> Client runs the `allSongs` GraphQL query → receives song documents whose `link` points at `/uploads/...` → the audio player streams the file directly.
 
-[Screenshot6] Uploaded Songs: User can view all songs they have uploaded and view each one individualy.
-<img src="./client/src/assets/soundify-uploaded.png">
+## Authors
 
-<br>
+- Marcus Lewis
+- Calvin Kim
+- Jason Yoo
+- Tyler Welker
+- Brett Hockridge
 
-[Screenshot7] Individual Songs: User can view the individual song by clicking "Go to Song". User can listen, comment, and view recommended songs.
-<img src="./client/src/assets/soundify-song.png">
+## License
 
-<br>
-
-## Contribute:
-
----
-
-The github repository is publicaly viewable. If you wish to contribute to the project please reach out via email to one of the members for access.
-
-<br>
-
-## Details:
-
----
-
--   Implemented npm packages with React.js
-
-<br>
-
-## URL:
-
----
-
-To view Github repository click [here](https://github.com/lewisemarcus/Soundify).
-
-<br>
-
-## Authors:
-
----
-
--   Marcus Lewis
--   Calvin Kim
--   Jason Yoo
--   Tyler Welker
--   Brett Hockridge
-
-## Credits:
-
---
+ISC
