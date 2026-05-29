@@ -135,7 +135,7 @@ Populate the database with demo users and playable sample songs:
 npm run seed
 ```
 
-This creates four demo accounts (password `password123`) — `demo@demo.com`, `nova@demo.com`, `luna@demo.com`, `vertex@demo.com` — and ten songs spanning every genre. Existing accounts are preserved, and it's safe to re-run.
+This creates four demo accounts (password `password123`) — `demo@demo.com`, `nova@demo.com`, `luna@demo.com`, `vertex@demo.com` — and ten songs spanning every genre. Sample audio is downloaded into `server/uploads` so the tracks play (and show waveforms) just like real uploads. Existing accounts are preserved, and it's safe to re-run.
 
 ## Project Structure
 

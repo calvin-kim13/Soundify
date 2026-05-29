@@ -3,18 +3,29 @@
 //   npm run seed        (from the project root)
 //   node seeders/seed.js (from the server/ directory)
 //
-// Songs point at public sample MP3s so they actually play in the app without
-// needing local upload files. Existing accounts are preserved; all songs are
-// cleared and re-created, so the script is safe to run repeatedly.
+// Sample MP3s are downloaded into server/uploads and served by this app, so
+// seeded songs are same-origin (with CORS + range headers) and play exactly
+// like real uploads — including the waveform on the song-details page.
+// Existing accounts are preserved; all songs are cleared and re-created, so
+// the script is safe to run repeatedly.
 
 import mongoose from "mongoose"
 import dotenv from "dotenv"
 import pkg from "bcryptjs"
+import * as fs from "fs/promises"
+import * as path from "path"
+import { fileURLToPath } from "url"
 import User from "../models/User.js"
 import Song from "../models/Songs.js"
 
 const { hash } = pkg
 dotenv.config()
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const UPLOADS_DIR = path.join(__dirname, "..", "uploads")
+const BASE_URL = (
+    process.env.SERVER_URL || `http://localhost:${process.env.PORT || 4000}`
+).replace(/\/$/, "")
 
 const DEMO_PASSWORD = "password123"
 
@@ -26,8 +37,18 @@ const users = [
 ]
 
 // Public, reliable sample tracks (SoundHelix) + placeholder cover art (picsum).
-const mp3 = (n) => `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${n}.mp3`
+const sampleMp3 = (n) => `https://www.soundhelix.com/examples/mp3/SoundHelix-Song-${n}.mp3`
 const cover = (seed) => `https://picsum.photos/seed/${seed}/400/400`
+
+// Download a sample MP3 into server/uploads and return its local filename.
+async function downloadSample(n) {
+    const filename = `seed-${n}.mp3`
+    const res = await fetch(sampleMp3(n))
+    if (!res.ok) throw new Error(`download failed (${res.status}) for ${sampleMp3(n)}`)
+    const buf = Buffer.from(await res.arrayBuffer())
+    await fs.writeFile(path.join(UPLOADS_DIR, filename), buf)
+    return filename
+}
 
 const songs = [
     { title: "Midnight Drive", artist: "Neon Pulse", genre: "EDM", username: "dj_nova", n: 1, tags: ["synth", "night"] },
@@ -51,6 +72,8 @@ async function seed() {
     await mongoose.connect(process.env.MONGO_URL)
     console.log("Connected to MongoDB")
 
+    await fs.mkdir(UPLOADS_DIR, { recursive: true })
+
     // Fresh set of songs every run.
     await Song.deleteMany({})
 
@@ -73,16 +96,19 @@ async function seed() {
         usersByName[u.username] = user
     }
 
-    // Create songs and link each one to its owner.
+    // Download each sample locally, then create songs linked to their owners.
     for (const s of songs) {
+        process.stdout.write(`  downloading ${s.title}... `)
+        const filename = await downloadSample(s.n)
+        console.log("done")
         const song = await Song.create({
             title: s.title,
             artist: s.artist,
             genre: s.genre,
             username: s.username,
             tags: s.tags,
-            filename: `seed-${s.n}.mp3`,
-            link: mp3(s.n),
+            filename: filename,
+            link: `${BASE_URL}/uploads/${filename}`,
             cover: cover(s.n),
         })
         const owner = usersByName[s.username]
