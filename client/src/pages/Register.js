@@ -2,7 +2,7 @@ import { useContext, useState } from "react"
 import { AuthContext } from "../context/authContext"
 import { useForm } from "../utils/hooks/hooks"
 import { useMutation } from "@apollo/react-hooks"
-import { message } from "antd"
+import toast from "../utils/toast"
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
 import AuthShell from "../components/AuthShell"
 
@@ -27,7 +27,7 @@ function Register(props) {
   const [showPassword, setShowPassword] = useState(false)
 
   function registerUserCallback() {
-    const hide = message.loading("Creating account...", 0)
+    const hide = toast.loading("Creating account...")
     setTimeout(hide, 1100)
 
     setTimeout(() => {

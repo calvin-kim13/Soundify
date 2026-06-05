@@ -11,6 +11,13 @@ body {
   color: #f5f4f8;
 }
 
+/* Retire the old orange brand var -> violet, so any lingering
+   var(--orange) usages across legacy components turn violet. */
+:root {
+  --orange: #8b5cf6;
+  --white: #f5f4f8;
+}
+
 .sf-theme {
   /* let inner pages own their padding; theme bg comes from auth-theme .sf-theme */
 }
@@ -102,36 +109,101 @@ body {
 /* ============================================================
    FOOTER PLAYER
    ============================================================ */
+/* compact bar */
 .sf-theme .footer-audio-player {
-  background: rgba(17, 13, 28, 0.92) !important;
+  background: rgba(17, 13, 28, 0.96) !important;
   border-top: 1px solid var(--sf-border);
   backdrop-filter: blur(16px);
   color: var(--sf-text);
+  height: 76px !important;
+  min-height: 76px;
+  padding: 0 18px;
+  gap: 16px;
+}
+/* controls */
+.sf-theme .footer-audio-controls {
+  width: auto !important;
+  gap: 8px;
+  padding: 0 !important;
+  align-items: center;
 }
 .sf-theme .footer-audio-controls button {
-  color: var(--sf-text) !important;
-  background-color: transparent !important;
+  background: transparent !important;
+  padding: 6px !important;
+  margin-top: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.sf-theme .footer-audio-controls button:hover {
-  color: var(--sf-accent-2) !important;
+.sf-theme .footer-audio-controls .prev svg,
+.sf-theme .footer-audio-controls .next svg {
+  width: 20px;
+  height: 20px;
+}
+/* SVGs ship with a black fill — force them light */
+.sf-theme .footer-audio-controls svg,
+.sf-theme .footer-audio-controls svg * {
+  fill: var(--sf-text) !important;
+}
+.sf-theme .footer-audio-controls .prev:hover svg *,
+.sf-theme .footer-audio-controls .next:hover svg * {
+  fill: var(--sf-accent-2) !important;
+}
+/* play / pause -> violet circle */
+.sf-theme .footer-audio-controls .play,
+.sf-theme .footer-audio-controls .pause {
+  background: var(--sf-grad) !important;
+  border-radius: 50% !important;
+  width: 42px;
+  height: 42px;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+}
+.sf-theme .footer-audio-controls .play svg,
+.sf-theme .footer-audio-controls .pause svg {
+  width: 18px;
+  height: 18px;
+}
+.sf-theme .footer-audio-controls .play svg *,
+.sf-theme .footer-audio-controls .pause svg * {
+  fill: #fff !important;
+}
+/* track title/artist — much smaller */
+.sf-theme .musicianTrack {
+  width: auto !important;
+  min-width: 150px;
+  max-width: 220px;
+  margin: 0 !important;
 }
 .sf-theme .footer-title,
 .sf-theme .musicianTrack h2 {
   color: var(--sf-text) !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
 }
 .sf-theme .footer-artist,
 .sf-theme .musicianTrack h3 {
   color: var(--sf-muted) !important;
+  font-size: 0.8rem !important;
+  font-weight: 400 !important;
+  margin: 0 !important;
+  text-align: left !important;
 }
-/* progress + volume range inputs */
+/* progress + volume */
 .sf-theme input[type="range"] {
   accent-color: var(--sf-accent);
 }
+.sf-theme #footerTimerBar,
 .sf-theme .footer-progress {
   height: 4px;
   border-radius: 4px;
 }
-/* MUI volume slider */
+.sf-theme #startFooterTimer,
+.sf-theme #endFooterTimer {
+  color: var(--sf-muted);
+  font-size: 0.74rem;
+}
 .sf-theme .MuiSlider-root {
   color: var(--sf-accent) !important;
 }
@@ -420,7 +492,7 @@ body {
   flex-direction: column;
   gap: 8px;
   padding: 24px 16px;
-  background: rgba(13, 10, 22, 0.6);
+  background: #0e0b18;
   border-right: 1px solid var(--sf-border);
   overflow-y: auto;
 }
@@ -533,33 +605,30 @@ body {
   max-width: 1180px;
   margin: 0 auto;
 }
-.sf-theme .sf-feature {
-  position: relative;
-  border-radius: 22px;
-  padding: 44px 40px;
-  margin-bottom: 32px;
-  background: var(--sf-grad);
-  background-size: cover;
-  background-position: center;
-  border: 1px solid var(--sf-border);
-  overflow: hidden;
+/* greeting header */
+.sf-theme .sf-home-head {
+  margin-bottom: 26px;
 }
-.sf-theme .sf-feature-title {
+.sf-theme .sf-home-head h1 {
   font-family: "Space Grotesk", sans-serif;
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
   font-weight: 700;
   letter-spacing: -0.03em;
-  margin: 0.6rem 0 0.2rem;
-  color: #fff;
+  margin: 0 0 0.3rem;
 }
-.sf-theme .sf-feature-artist {
-  color: #cfc9e0;
-  font-size: 1.05rem;
-  margin: 0 0 1.4rem;
+.sf-theme .sf-home-head p {
+  color: var(--sf-muted);
+  font-size: 1rem;
+  margin: 0;
 }
-.sf-theme .sf-feature-actions {
-  display: flex;
-  gap: 12px;
+/* now-playing card accent */
+.sf-theme .sf-card.playing {
+  background: var(--sf-surface-strong);
+  border-color: rgba(167, 139, 250, 0.5);
+}
+.sf-theme .sf-card.playing .sf-card-play {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* genre filter pills */
@@ -730,7 +799,7 @@ body {
 
 /* player bar height inside the grid */
 .sf-theme .sf-shell .footer-audio-player {
-  min-height: 84px;
+  min-height: 76px;
 }
 
 /* ---------- responsive ---------- */
@@ -781,3 +850,340 @@ body {
   z-index: auto !important;
   width: 100%;
 }
+
+/* ============================================================
+   TOAST (replaces antd message/notification)
+   ============================================================ */
+.sf-toast-host {
+  position: fixed;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+.sf-toast {
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: #16121f;
+  color: #f5f4f8;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.sf-toast.show { opacity: 1; transform: translateY(0); }
+.sf-toast-success { border-color: rgba(139, 92, 246, 0.55); }
+.sf-toast-error { border-color: rgba(251, 113, 133, 0.55); color: #fda4af; }
+
+/* spinner */
+.sf-detail-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+.sf-spinner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: var(--sf-accent);
+  animation: sf-spin 0.8s linear infinite;
+}
+@keyframes sf-spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   SONG DETAILS (custom, no antd)
+   ============================================================ */
+.sf-theme .sf-detail { max-width: 1100px; margin: 0 auto; }
+.sf-theme .sf-detail-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--sf-muted); font-size: 0.95rem; font-weight: 600;
+  margin-bottom: 22px;
+}
+.sf-theme .sf-detail-back:hover { color: var(--sf-text); }
+.sf-theme .sf-detail-hero {
+  display: flex; gap: 28px; align-items: flex-end; margin-bottom: 26px;
+}
+.sf-theme .sf-detail-cover {
+  width: 220px; height: 220px; border-radius: 18px; object-fit: cover;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); flex-shrink: 0;
+}
+.sf-theme .sf-detail-cover-ph { background: var(--sf-grad); }
+.sf-theme .sf-detail-info { display: flex; flex-direction: column; gap: 8px; }
+.sf-theme .sf-detail-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 700;
+  letter-spacing: -0.03em; margin: 4px 0 0; color: var(--sf-text);
+}
+.sf-theme .sf-detail-artist { color: var(--sf-muted); font-size: 1.1rem; margin: 0; }
+.sf-theme .sf-detail-actions { display: flex; gap: 10px; margin-top: 12px; }
+.sf-theme .sf-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 999px;
+  background: var(--sf-surface); border: 1px solid var(--sf-border);
+  color: var(--sf-text); font-weight: 600; cursor: pointer;
+  transition: background 0.15s ease;
+}
+.sf-theme .sf-chip:hover { background: var(--sf-surface-strong); }
+
+.sf-theme .sf-detail-wave {
+  background: var(--sf-surface); border: 1px solid var(--sf-border);
+  border-radius: 18px; padding: 18px; margin-bottom: 28px; overflow: hidden;
+}
+.sf-theme .sf-detail-spectrum { display: flex; justify-content: center; margin-top: 6px; }
+
+.sf-theme .sf-detail-body {
+  display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start;
+}
+.sf-theme .sf-detail-h2 {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.3rem; font-weight: 700; margin: 0 0 16px;
+}
+.sf-theme .sf-comment-compose { display: flex; gap: 10px; margin-bottom: 16px; }
+.sf-theme .sf-comment-compose .sf-input { flex: 1; }
+.sf-theme .sf-comment-compose .sf-btn { height: 52px; padding: 0 24px; }
+
+.sf-theme .sf-comments { display: flex; flex-direction: column; }
+.sf-theme .sf-comments-empty { color: var(--sf-muted); padding: 16px 0; }
+.sf-theme .sf-comment {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 4px; border-bottom: 1px solid var(--sf-border);
+}
+.sf-theme .sf-comment-avatar {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; color: #fff; background: var(--sf-grad); font-size: 0.9rem;
+}
+.sf-theme .sf-comment-body { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.sf-theme .sf-comment-author { font-weight: 600; font-size: 0.82rem; color: var(--sf-accent-2); }
+.sf-theme .sf-comment-text { color: var(--sf-text); font-size: 0.95rem; }
+.sf-theme .sf-comment-del {
+  background: transparent; border: none; color: var(--sf-muted);
+  cursor: pointer; font-size: 1rem; padding: 6px; border-radius: 8px;
+}
+.sf-theme .sf-comment-del:hover { color: var(--sf-danger); background: var(--sf-surface); }
+
+.sf-theme .sf-detail-rec {
+  background: var(--sf-surface); border: 1px solid var(--sf-border);
+  border-radius: 18px; padding: 20px;
+}
+.sf-theme .sf-rec-list { display: flex; flex-direction: column; }
+.sf-theme .sf-rec-item {
+  display: flex; flex-direction: column; padding: 11px 10px;
+  border-radius: 10px; cursor: pointer; transition: background 0.15s ease;
+}
+.sf-theme .sf-rec-item:hover { background: var(--sf-surface-strong); }
+.sf-theme .sf-rec-title { font-weight: 600; color: var(--sf-text); }
+.sf-theme .sf-rec-artist { font-size: 0.82rem; color: var(--sf-muted); }
+
+/* ===== Custom modal ===== */
+.sf-modal-overlay {
+  position: fixed; inset: 0; z-index: 15000; padding: 20px;
+  background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+}
+.sf-modal {
+  width: 100%; max-width: 440px; background: #16121f;
+  border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); overflow: hidden;
+}
+.sf-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 22px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sf-modal-head h3 {
+  font-family: "Space Grotesk", sans-serif; margin: 0;
+  font-size: 1.2rem; color: #f5f4f8;
+}
+.sf-modal-x {
+  background: transparent; border: none; color: #9a95ab;
+  font-size: 1.7rem; line-height: 1; cursor: pointer;
+}
+.sf-modal-x:hover { color: #f5f4f8; }
+.sf-modal-body { padding: 20px 22px 24px; }
+.sf-modal-label {
+  display: block; font-size: 0.76rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: #9a95ab; margin: 16px 0 8px;
+}
+.sf-modal-label:first-child { margin-top: 0; }
+.sf-modal-create { display: flex; gap: 10px; }
+.sf-modal-create .sf-input { flex: 1; }
+.sf-modal-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow: auto; }
+.sf-modal-pl {
+  padding: 12px 14px; border-radius: 10px; cursor: pointer; color: #f5f4f8;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--sf-border);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.sf-modal-pl:hover { background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.4); }
+
+@media (max-width: 820px) {
+  .sf-theme .sf-detail-hero { flex-direction: column; align-items: flex-start; }
+  .sf-theme .sf-detail-body { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   LOGGED-OUT NAV (slim)
+   ============================================================ */
+.sf-theme .sf-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 40px; height: auto;
+}
+.sf-theme .sf-nav-brand {
+  font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 1.5rem;
+  letter-spacing: -0.02em; text-decoration: none;
+  background: var(--sf-grad); -webkit-background-clip: text;
+  background-clip: text; color: transparent;
+}
+.sf-theme .sf-nav-actions { display: flex; align-items: center; gap: 18px; }
+.sf-theme .sf-nav-login { color: var(--sf-text); text-decoration: none; font-weight: 600; }
+.sf-theme .sf-nav-login:hover { color: var(--sf-accent-2); }
+.sf-theme .sf-nav-cta { height: 42px; padding: 0 22px; }
+
+/* ============================================================
+   VOLUME (native range)
+   ============================================================ */
+.sf-theme .volContainer {
+  display: flex; align-items: center; gap: 10px; width: auto !important;
+  min-width: 160px;
+}
+.sf-theme .sf-vol-icon { color: var(--sf-muted); font-size: 1.05rem; flex-shrink: 0; }
+.sf-theme .sf-volume {
+  -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18); accent-color: var(--sf-accent);
+  width: 110px; cursor: pointer;
+}
+.sf-theme .sf-volume::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; cursor: pointer;
+}
+
+/* ============================================================
+   SHARED TRACK ROW (playlists / profile / uploads)
+   ============================================================ */
+.sf-theme .sf-pltracks-list { display: flex; flex-direction: column; gap: 4px; }
+.sf-theme .sf-track-row {
+  display: flex; align-items: center; gap: 14px; padding: 10px 12px;
+  border-radius: 12px; transition: background 0.15s ease;
+}
+.sf-theme .sf-track-row:hover { background: var(--sf-surface); }
+.sf-theme .sf-track-row-play {
+  width: 40px; height: 40px; border-radius: 50%; border: none; flex-shrink: 0;
+  background: var(--sf-grad); color: #fff; font-size: 1.2rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+}
+.sf-theme .sf-track-row-art {
+  width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+}
+.sf-theme .sf-track-row-meta { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.sf-theme .sf-track-row-title {
+  font-weight: 600; color: var(--sf-text); cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sf-theme .sf-track-row-title:hover { color: var(--sf-accent-2); }
+.sf-theme .sf-track-row-artist { font-size: 0.84rem; color: var(--sf-muted); }
+.sf-theme .sf-track-row-del {
+  background: transparent; border: none; color: var(--sf-muted);
+  cursor: pointer; padding: 8px; border-radius: 8px; font-size: 1rem;
+}
+.sf-theme .sf-track-row-del:hover { color: var(--sf-danger); background: var(--sf-surface-strong); }
+
+/* ============================================================
+   PLAYLISTS PAGE
+   ============================================================ */
+.sf-theme .sf-pl { display: grid; grid-template-columns: 280px 1fr; gap: 28px; max-width: 1180px; margin: 0 auto; }
+.sf-theme .sf-pl-list { display: flex; flex-direction: column; gap: 4px; }
+.sf-theme .sf-pl-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-radius: 12px; cursor: pointer; color: var(--sf-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.sf-theme .sf-pl-item:hover { background: var(--sf-surface); color: var(--sf-text); }
+.sf-theme .sf-pl-item.active { background: var(--sf-surface-strong); color: #fff; }
+.sf-theme .sf-pl-icon { font-size: 1.2rem; color: var(--sf-accent-2); flex-shrink: 0; }
+.sf-theme .sf-pl-name { flex: 1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sf-theme .sf-pl-del { background: transparent; border: none; color: var(--sf-muted); cursor: pointer; padding: 4px; opacity: 0; }
+.sf-theme .sf-pl-item:hover .sf-pl-del { opacity: 1; }
+.sf-theme .sf-pl-del:hover { color: var(--sf-danger); }
+.sf-theme .sf-pl-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; height: 50vh; color: var(--sf-muted); font-size: 1.05rem;
+}
+.sf-theme .sf-pl-empty svg { font-size: 2.6rem; color: var(--sf-accent-2); }
+
+/* selected playlist tracks */
+.sf-theme .sf-pltracks-head { display: flex; align-items: flex-end; gap: 22px; margin-bottom: 24px; }
+.sf-theme .sf-pltracks-cover {
+  width: 150px; height: 150px; border-radius: 16px; background: var(--sf-grad);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); flex-shrink: 0;
+}
+.sf-theme .sf-pltracks-eyebrow { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--sf-muted); }
+.sf-theme .sf-pltracks-title { font-family: "Space Grotesk", sans-serif; font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 700; margin: 6px 0 4px; }
+.sf-theme .sf-pltracks-count { color: var(--sf-muted); margin: 0; }
+
+@media (max-width: 820px) {
+  .sf-theme .sf-pl { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PROFILE PAGE
+   ============================================================ */
+.sf-theme .sf-profile { max-width: 1000px; margin: 0 auto; }
+.sf-theme .sf-profile-hero { display: flex; align-items: center; gap: 26px; margin-bottom: 34px; }
+.sf-theme .sf-profile-avatar {
+  width: 120px; height: 120px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; font-weight: 700; color: #fff; background: var(--sf-grad);
+  box-shadow: 0 18px 44px rgba(124, 58, 237, 0.4);
+}
+.sf-theme .sf-profile-name { font-family: "Space Grotesk", sans-serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 700; letter-spacing: -0.02em; margin: 6px 0 4px; }
+.sf-theme .sf-profile-stats { color: var(--sf-muted); margin: 0; }
+
+/* ============================================================
+   UPLOAD PAGE
+   ============================================================ */
+.sf-theme .sf-upload { max-width: 1000px; margin: 0 auto; }
+.sf-theme .sf-upload-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+.sf-theme .sf-upload-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; height: 55vh; color: var(--sf-muted);
+}
+.sf-theme .sf-upload-empty svg { font-size: 3rem; color: var(--sf-accent-2); }
+.sf-theme .sf-upload-form { display: flex; flex-direction: column; gap: 14px; }
+
+/* native select + file input */
+.sf-theme .sf-select {
+  width: 100%; height: 52px; padding: 0 14px; border-radius: 12px;
+  background: var(--sf-surface); border: 1px solid var(--sf-border);
+  color: var(--sf-text); font-size: 0.98rem; font-family: inherit; cursor: pointer;
+}
+.sf-theme .sf-select:focus { outline: none; border-color: var(--sf-accent); }
+.sf-theme .sf-select option { background: #16121f; color: var(--sf-text); }
+.sf-theme .sf-file {
+  display: flex; align-items: center; gap: 12px; padding: 16px 16px;
+  border-radius: 12px; border: 1px dashed var(--sf-border);
+  background: var(--sf-surface); color: var(--sf-muted); cursor: pointer;
+  font-size: 0.92rem; transition: border-color 0.15s ease, background 0.15s ease;
+}
+.sf-theme .sf-file:hover { border-color: var(--sf-accent); background: var(--sf-surface-strong); }
+.sf-theme .sf-file svg { font-size: 1.3rem; color: var(--sf-accent-2); flex-shrink: 0; }
+.sf-theme .sf-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sf-theme .sf-file input { display: none; }
+
+/* danger button + confirm modal */
+.sf-theme .sf-btn-danger,
+.sf-confirm .sf-btn-danger {
+  background: var(--sf-danger); color: #1a0c10; font-weight: 700;
+}
+.sf-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.sf-confirm .sf-btn { height: 44px; }

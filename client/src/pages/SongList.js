@@ -1,383 +1,319 @@
-import React, { useState, useEffect } from "react";
-import { Modal, message, Upload, Input, Select, Space, Empty } from "antd";
-import {
-  UploadOutlined,
-  QuestionCircleOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
-import Button from "../components/Button";
-import "./styles/SongList.css";
-import { GET_USER_SONGS } from "../utils/queries/songQueries";
-import { useQuery, useMutation } from "@apollo/client";
+import React, { useState, useEffect } from "react"
+import { useQuery, useMutation } from "@apollo/client"
+import axios from "axios"
+import { FiUploadCloud, FiTrash2, FiPlus, FiImage, FiMusic } from "react-icons/fi"
+import { GET_USER_SONGS } from "../utils/queries/songQueries"
+import { DELETE_SONG } from "../utils/mutations/songMutations"
+import toast from "../utils/toast"
 
-import axios from "axios";
-import { DELETE_SONG } from "../utils/mutations/songMutations";
-import orange from "../assets/orange.png";
-import { CircularProgress, Box } from "@mui/material";
+const GENRES = ["Rock", "RnB", "HipHop", "EDM", "Pop", "Country", "Classical", "International"]
 
 const SongList = () => {
-  const username = localStorage.getItem("username");
-  const token = localStorage.getItem("token");
-  const { loading, data, refetch } = useQuery(GET_USER_SONGS, {
-    variables: { username: username },
-  });
-  const [deleted, setDeleted] = useState(false);
-  const usersSongs = data?.userSongs || [];
-  const [removeSong, { error }] = useMutation(DELETE_SONG);
-  const [song, setSong] = useState({
-    title: "",
-    genre: "",
-    username: username,
-    artist: "",
-    filename: "",
-    link: "",
-  });
-  const [file, setFile] = useState(null);
-  const [imgFile, setImgFile] = useState(null);
-  useEffect(() => {
-    refetch();
-    setDeleted(false);
-  }, [deleted]);
+    const username = localStorage.getItem("username")
+    const token = localStorage.getItem("token")
+    const { loading, data, refetch } = useQuery(GET_USER_SONGS, {
+        variables: { username },
+    })
+    const usersSongs = data?.userSongs || []
+    const [removeSong] = useMutation(DELETE_SONG)
 
-  const loadingSong = () => {
-    message.loading("Uploading song...", 15);
-  };
+    const [song, setSong] = useState({ title: "", genre: "", artist: "" })
+    const [file, setFile] = useState(null)
+    const [imgFile, setImgFile] = useState(null)
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const [confirmDelete, setConfirmDelete] = useState(null)
+    const [uploading, setUploading] = useState(false)
 
-  const errorMessage = () => {
-    message.error("Must fill out all fields!");
-  };
-  const songErrorMessage = () => {
-    message.error(
-      "Song already exists, please remove the file first if you wish to re-upload."
-    );
-  };
-
-  const handleChange = (event) => {
-    if (event.label) {
-      const value = event.value;
-      const name = "genre";
-      setSong((prevInput) => {
-        return {
-          ...prevInput,
-          [name]: value,
-        };
-      });
-    } else {
-      const { name, value } = event.target;
-      setSong((prevInput) => {
-        return {
-          ...prevInput,
-          [name]: value,
-        };
-      });
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setSong((prev) => ({ ...prev, [name]: value }))
     }
-  };
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleOk = async () => {
-    if (
-      song.title === "" ||
-      song.artist === "" ||
-      song.genre === "" ||
-      file === null
-    ) {
-      return errorMessage();
+    const resetForm = () => {
+        setSong({ title: "", genre: "", artist: "" })
+        setFile(null)
+        setImgFile(null)
     }
-    for (let eachSong of usersSongs) {
-      if (
-        song.title === eachSong.title &&
-        song.artist === eachSong.artist &&
-        song.genre === eachSong.genre
-      )
-        return songErrorMessage();
+
+    const handleUpload = async () => {
+        if (!song.title || !song.artist || !song.genre || !file) {
+            return toast.error("Fill out all fields and choose a file.")
+        }
+        const dup = usersSongs.some(
+            (s) =>
+                s.title === song.title &&
+                s.artist === song.artist &&
+                s.genre === song.genre,
+        )
+        if (dup) return toast.error("You already uploaded this song.")
+
+        const tags = song.title.split(" ")
+        tags.push(song.genre, song.artist.split(" "))
+        const formData = new FormData()
+        formData.append("username", username)
+        formData.append("genre", song.genre)
+        formData.append("artist", song.artist)
+        formData.append("title", song.title)
+        formData.append("tags", tags)
+        formData.append("filename", file)
+        if (imgFile) formData.append("imgFilename", imgFile)
+
+        setUploading(true)
+        const hide = toast.loading("Uploading song…")
+        try {
+            await axios.post("/upload", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            })
+            hide()
+            setIsModalVisible(false)
+            resetForm()
+            await refetch()
+            toast.success("Song uploaded.")
+        } catch (err) {
+            hide()
+            toast.error("Upload failed.")
+        }
+        setUploading(false)
     }
-    setIsModalVisible(false);
-    const tags = song.title.split(" ");
-    tags.push(song.genre, song.artist.split(" "));
-    const formData = new FormData();
-    formData.append("username", song.username);
-    formData.append("genre", song.genre);
-    formData.append("artist", song.artist);
-    formData.append("title", song.title);
-    formData.append("tags", tags);
-    formData.append("filename", file);
-    formData.append("imgFilename", imgFile);
-    await loadingSong();
 
-    try {
-      await axios({
-        method: "post",
-        url: "/upload",
-        data: formData,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      await window.location.reload();
-    } catch (err) {
-      console.log(err);
+    const doDelete = async (s) => {
+        setConfirmDelete(null)
+        try {
+            await removeSong({
+                variables: { songId: s._id, token, key: s.filename },
+            })
+            await refetch()
+            toast.success("Song deleted.")
+        } catch (err) {
+            toast.error("Couldn't delete song.")
+        }
     }
-  };
 
-  const removeSongFromList = async (song) => {
-    try {
-      await removeSong({
-        variables: {
-          songId: song._id,
-          token: token,
-          key: song.filename,
-        },
-      });
-      setDeleted(true);
+    useEffect(() => {
+        refetch()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
-      await message.success("Successfully deleted song");
-    } catch (err) {
-      message.error("Couldn't delete song.");
-    }
-  };
-
-  const handleDelete = async (song) => {
-    try {
-      Modal.confirm({
-        title: "Confirm",
-        icon: <QuestionCircleOutlined style={{ color: "red" }} />,
-        content: "Are you sure you want to delete this song?",
-        okText: "Yes",
-        cancelText: "No",
-        className: "logout",
-        onOk() {
-          removeSongFromList(song);
-        },
-      });
-    } catch (err) {
-      message.error("Error deleting song.");
-    }
-  };
-
-  const handleCancel = () => {
-    setSong({
-      title: "",
-      genre: "",
-      username: username,
-      artist: "",
-      filename: "",
-      link: "",
-    });
-    setIsModalVisible(false);
-  };
-
-  const { Option } = Select;
-
-  const { Dragger } = Upload;
-
-  const props = {
-    name: "filename",
-    uid: "file",
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST",
-    },
-
-    accept: "audio/*",
-    multiple: false,
-
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} file uploaded successfully.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-    beforeUpload(file) {
-      setFile(file);
-      return false;
-    },
-  };
-  const imgProps = {
-    name: "imgFilename",
-    uid: "imgFile",
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST",
-    },
-
-    accept: "image/*",
-    multiple: false,
-
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== "uploading") {
-      }
-      if (status === "done") {
-        message.success(`${info.file.name} Image uploaded successfully.`);
-      } else if (status === "error") {
-        message.error(`${info.file.name} Image upload failed.`);
-      }
-    },
-
-    beforeUpload(imgFile) {
-      setImgFile(imgFile);
-      const isLt2M = imgFile.size / 1024 / 1024 < 100;
-      if (!isLt2M) {
-        message.error("Image must smaller than 2MB!");
-      }
-      return false;
-    },
-  };
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: "9rem",
-        }}
-      >
-        <CircularProgress style={{ color: "orange" }} />
-      </Box>
-    );
-  }
-  return (
-    <div className="song-list-wrapper">
-      <Modal
-        title="Upload Song"
-        visible={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        destroyOnClose
-        style={{ top: 20, marginBottom: "100px" }}
-      >
-        <Space direction="vertical" size="middle" style={{ display: "flex" }}>
-          <Input
-            onChange={handleChange}
-            name="title"
-            value={song.title}
-            placeholder="Song title"
-            size="large"
-            required
-          />
-          <Input
-            onChange={handleChange}
-            value={song.artist}
-            name="artist"
-            placeholder="Artist"
-            size="large"
-            required
-          />
-          <Select
-            labelInValue
-            placeholder="Genre"
-            size="large"
-            style={{ width: "100%" }}
-            onChange={handleChange}
-          >
-            <Option value="Rock" name="genre" key="1">
-              Rock
-            </Option>
-            <Option value="RnB" name="genre" key="2">
-              RnB
-            </Option>
-            <Option value="HipHop" name="genre" key="3">
-              HipHop
-            </Option>
-            <Option value="EDM" name="genre" key="4">
-              EDM
-            </Option>
-            <Option value="Pop" name="genre" key="5">
-              Pop
-            </Option>
-            <Option value="Country" name="genre" key="6">
-              Country
-            </Option>
-            <Option value="Classical" name="genre" key="7">
-              Classical
-            </Option>
-            <Option value="International" name="genre" key="8">
-              International
-            </Option>
-          </Select>
-          <Dragger {...props}>
-            <p className="ant-upload-drag-icon">
-              <UploadOutlined />
-            </p>
-            <p className="ant-upload-text">
-              Click or drag a music file to this area to upload
-            </p>
-          </Dragger>
-          <Dragger {...imgProps}>
-            <p className="ant-upload-drag-icon">
-              <UploadOutlined />
-            </p>
-            <p className="ant-upload-text">
-              Click or drag an album cover to this area to upload (optional)
-            </p>
-          </Dragger>
-        </Space>
-      </Modal>
-      {usersSongs.length === 0 ? (
-        <div className="empty-page">
-          <Empty
-            description={
-              <span className="empty-description">
-                You haven't uploaded any songs
-              </span>
-            }
-            style={{ marginTop: "5rem" }}
-            className="empty-description-container"
-          />
-          <Button className="modal-btn uploadSongbtn" onClick={showModal}>
-            <Space>
-              <UploadOutlined /> Upload
-            </Space>
-          </Button>
-        </div>
-      ) : (
-        <div className="uploaded-song-container">
-          <div className="upload-song-header">
-            <div>
-              <h3>Upload more files here</h3>
+    if (loading) {
+        return (
+            <div className="sf-detail-loading">
+                <div className="sf-spinner" />
             </div>
-            <Button className="modal-btn uploadSongbtn" onClick={showModal}>
-              <Space>
-                <UploadOutlined /> Upload
-              </Space>
-            </Button>
-          </div>
-          {usersSongs.map((song) => {
-            return (
-              <div className="song-row">
-                <div className="song-information">
-                  <img
-                    src={song.cover ? song.cover : orange}
-                    alt="Album Cover"
-                  />
-                  <div className="song-text">
-                    <h4>{song.title}</h4>
-                    <h5>{song.artist}</h5>
-                    <h6>{song.genre}</h6>
-                    <h6>{song.uploaded}</h6>
-                  </div>
-                </div>
-                <div>
-                  <DeleteOutlined
-                    onClick={() => handleDelete(song)}
-                    style={{ fontSize: "1.2rem", color: "black" }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
+        )
+    }
 
-export default SongList;
+    return (
+        <div className="sf-upload">
+            <div className="sf-upload-head">
+                <div>
+                    <h1 className="sf-detail-title" style={{ fontSize: "2rem" }}>
+                        Your uploads
+                    </h1>
+                    <p className="sf-profile-stats">
+                        {usersSongs.length}{" "}
+                        {usersSongs.length === 1 ? "track" : "tracks"}
+                    </p>
+                </div>
+                <button
+                    className="sf-btn sf-btn-primary"
+                    onClick={() => setIsModalVisible(true)}
+                >
+                    <FiPlus /> Upload
+                </button>
+            </div>
+
+            {usersSongs.length === 0 ? (
+                <div className="sf-upload-empty">
+                    <FiUploadCloud />
+                    <p>You haven't uploaded any songs yet.</p>
+                    <button
+                        className="sf-btn sf-btn-primary"
+                        onClick={() => setIsModalVisible(true)}
+                    >
+                        Upload your first track
+                    </button>
+                </div>
+            ) : (
+                <div className="sf-pltracks-list">
+                    {usersSongs.map((s) => (
+                        <div className="sf-track-row" key={s._id}>
+                            {s.cover ? (
+                                <img
+                                    className="sf-track-row-art"
+                                    src={s.cover}
+                                    alt={s.title}
+                                />
+                            ) : (
+                                <div className="sf-track-row-art sf-card-art-ph" />
+                            )}
+                            <div className="sf-track-row-meta">
+                                <span className="sf-track-row-title">
+                                    {s.title}
+                                </span>
+                                <span className="sf-track-row-artist">
+                                    {s.artist} · {s.genre}
+                                </span>
+                            </div>
+                            <button
+                                className="sf-track-row-del"
+                                onClick={() => setConfirmDelete(s)}
+                                aria-label="Delete song"
+                            >
+                                <FiTrash2 />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* ---------- Upload modal ---------- */}
+            {isModalVisible && (
+                <div
+                    className="sf-m2-overlay"
+                    onClick={() => setIsModalVisible(false)}
+                >
+                    <div
+                        className="sf-m2 sf-m2-wide"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="sf-m2-close"
+                            onClick={() => setIsModalVisible(false)}
+                            aria-label="Close"
+                        >
+                            ×
+                        </button>
+                        <h2 className="sf-m2-title">Upload a track</h2>
+                        <p className="sf-m2-sub">
+                            Share your sound with the world.
+                        </p>
+
+                        <div className="sf-m2-ugrid">
+                            <label className="sf-m2-cover">
+                                {imgFile ? (
+                                    <img
+                                        className="sf-m2-cover-img"
+                                        src={URL.createObjectURL(imgFile)}
+                                        alt="cover preview"
+                                    />
+                                ) : (
+                                    <div className="sf-m2-cover-empty">
+                                        <FiImage />
+                                        <span>Cover art</span>
+                                    </div>
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                        setImgFile(e.target.files[0] || null)
+                                    }
+                                />
+                            </label>
+
+                            <div className="sf-m2-fields">
+                                <input
+                                    className="sf-m2-input"
+                                    name="title"
+                                    value={song.title}
+                                    onChange={handleChange}
+                                    placeholder="Song title"
+                                />
+                                <input
+                                    className="sf-m2-input"
+                                    name="artist"
+                                    value={song.artist}
+                                    onChange={handleChange}
+                                    placeholder="Artist"
+                                />
+                                <select
+                                    className={
+                                        "sf-m2-input sf-m2-select" +
+                                        (song.genre ? "" : " placeholder")
+                                    }
+                                    name="genre"
+                                    value={song.genre}
+                                    onChange={handleChange}
+                                >
+                                    <option value="" disabled>
+                                        Choose a genre
+                                    </option>
+                                    {GENRES.map((g) => (
+                                        <option key={g} value={g}>
+                                            {g}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <label
+                            className={"sf-m2-audio" + (file ? " has-file" : "")}
+                        >
+                            <FiMusic />
+                            <span>
+                                {file ? file.name : "Choose an audio file"}
+                            </span>
+                            <input
+                                type="file"
+                                accept="audio/*"
+                                onChange={(e) =>
+                                    setFile(e.target.files[0] || null)
+                                }
+                            />
+                        </label>
+
+                        <button
+                            className="sf-m2-submit"
+                            onClick={handleUpload}
+                            disabled={uploading}
+                        >
+                            {uploading ? "Uploading…" : "Upload track"}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ---------- Delete confirm ---------- */}
+            {confirmDelete && (
+                <div
+                    className="sf-m2-overlay"
+                    onClick={() => setConfirmDelete(null)}
+                >
+                    <div
+                        className="sf-m2 sf-m2-confirm"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="sf-m2-close"
+                            onClick={() => setConfirmDelete(null)}
+                            aria-label="Close"
+                        >
+                            ×
+                        </button>
+                        <h2 className="sf-m2-title">Delete song?</h2>
+                        <p className="sf-m2-sub">
+                            “{confirmDelete.title}” will be permanently removed.
+                        </p>
+                        <div className="sf-m2-actions">
+                            <button
+                                className="sf-m2-ghost"
+                                onClick={() => setConfirmDelete(null)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="sf-m2-danger"
+                                onClick={() => doDelete(confirmDelete)}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default SongList

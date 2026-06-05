@@ -1,86 +1,57 @@
-import React, { useState, useEffect } from "react"
-import { List, Avatar, Skeleton, Divider } from "antd"
+import React from "react"
 import { DELETE_COMMENT } from "../utils/mutations/commentMutations"
 import { useMutation } from "@apollo/client"
-import { DeleteOutlined } from "@ant-design/icons"
-import { message } from "antd"
-const CommentSection = ({ comments, songId }) => {
+import { FiTrash2 } from "react-icons/fi"
+import toast from "../utils/toast"
+
+const CommentSection = ({ comments = [], songId }) => {
     const username = localStorage.getItem("username")
     const token = localStorage.getItem("token")
-    const [loading, setLoading] = useState(false)
-    const [data, setData] = useState([])
-    const [removeComment, { error }] = useMutation(DELETE_COMMENT)
-    const loadMoreData = () => {
-        if (loading) {
-            return
-        }
+    const [removeComment] = useMutation(DELETE_COMMENT)
 
-        setLoading(true)
-        //TODO: create a function to load more data once you reach bottom of page
-        setData([...comments])
-        setLoading(false)
-    }
-
-    const removeCommentHandler = async (event) => {
-        event.preventDefault()
+    const handleRemove = async (commentId, commentAuthor) => {
         try {
             await removeComment({
-                variables: {
-                    songId: songId,
-                    commentId: event.currentTarget.id,
-                    token: token,
-                    commentAuthor: event.currentTarget.name,
-                },
+                variables: { songId, commentId, token, commentAuthor },
             })
-            await message.success("Successfully removed comment.")
+            toast.success("Comment removed.")
         } catch (err) {
-            message.error("Error removing comment.")
+            toast.error("Couldn't remove comment.")
         }
     }
 
-    useEffect(() => {
-        loadMoreData()
-    }, [comments.length])
+    if (!comments.length) {
+        return (
+            <div className="sf-comments-empty">
+                No comments yet — start the conversation.
+            </div>
+        )
+    }
+
     return (
-        <div
-            id="scrollableDiv"
-            style={{
-                height: 400,
-                overflow: "auto",
-                padding: "0 16px",
-                border: "1px solid rgba(140, 140, 140, 0.35)",
-            }}
-        >
-            <List
-                dataSource={data}
-                renderItem={(item) => (
-                    <List.Item>
-                        <List.Item.Meta
-                            style={{ width: "10%" }}
-                            avatar={<Avatar src="" />}
-                            title={
-                                <a href="https://ant.design">
-                                    {item.commentAuthor}
-                                </a>
-                            }
-                        />
-                        <div style={{ marginRight: 10, width: "70%" }}>
-                            {item.commentText}
-                        </div>
+        <div className="sf-comments">
+            {comments.map((c) => (
+                <div className="sf-comment" key={c._id}>
+                    <div className="sf-comment-avatar">
+                        {c.commentAuthor?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="sf-comment-body">
+                        <span className="sf-comment-author">
+                            {c.commentAuthor}
+                        </span>
+                        <span className="sf-comment-text">{c.commentText}</span>
+                    </div>
+                    {c.commentAuthor === username && (
                         <button
-                            id={item._id}
-                            name={item.commentAuthor}
-                            onClick={removeCommentHandler}
-                            style={{
-                                backgroundColor: "#FFFFFF",
-                                cursor: "pointer",
-                            }}
+                            className="sf-comment-del"
+                            onClick={() => handleRemove(c._id, c.commentAuthor)}
+                            aria-label="Delete comment"
                         >
-                            <DeleteOutlined style={{ fontSize: "1.2rem" }} />
+                            <FiTrash2 />
                         </button>
-                    </List.Item>
-                )}
-            />
+                    )}
+                </div>
+            ))}
         </div>
     )
 }

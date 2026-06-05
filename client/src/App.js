@@ -9,13 +9,14 @@ import {
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import Topbar from "./components/Topbar";
 import SongDetails from "./pages/SongDetails";
 import { AuthContext } from "./context/authContext";
 import { useContext, useEffect, useState, useRef } from "react";
 import Footer from "./components/Footer";
-import DashResults from "./components/Dashboard/DashResults";
 import "./styles/auth-theme.css";
 import "./styles/app-theme.css";
+import "./styles/mockup-theme.css";
 
 function App() {
   const [genreClickCount, setGenreClickCount] = useState(0);
@@ -37,13 +38,6 @@ function App() {
 
   const [singlePL, setSinglePL] = useState([]);
   const { user } = useContext(AuthContext);
-
-  // Opening a song-details page starts paused so it doesn't inherit play state.
-  useEffect(() => {
-    if (location.pathname.split("/")[1] === "song") {
-      setIsPlaying(false);
-    }
-  }, [location.pathname]);
 
   // Single source of truth for playback: only play/pause in response to the
   // isPlaying state — never on navigation. (Previously several effects called
@@ -85,20 +79,6 @@ function App() {
             />
           }
         />
-        <Route
-          path="/DashResults"
-          element={
-            <DashResults
-              setSinglePL={setSinglePL}
-              getSongInfo={getSongInfo}
-              setIsPlaying={setIsPlaying}
-              currentPlayer={currentPlayer}
-              dashSearchResults={dashSearchResults}
-              setOneSongClick={setOneSongClick}
-              setCurrentSong={setCurrentSong}
-            />
-          }
-        />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
@@ -111,15 +91,12 @@ function App() {
           element={
             <SongDetails
               setSinglePL={setSinglePL}
-              setTrackProgress={setTrackProgress}
-              trackProgress={trackProgress}
-              isDetailsPlaying={isDetailsPlaying}
               getSongInfo={getSongInfo}
               isPlaying={isPlaying}
               setIsPlaying={setIsPlaying}
               currentPlayer={currentPlayer}
               setCurrentSong={setCurrentSong}
-              volume={volume}
+              currentSong={currentSong}
             />
           }
         />
@@ -136,6 +113,7 @@ function App() {
                 currentPlayer={currentPlayer}
                 trackIndex={trackIndex}
                 getTrackIndex={getTrackIndex}
+                setSinglePL={setSinglePL}
               />
             ) : (
               <Navigate to="/" />
@@ -194,7 +172,10 @@ function App() {
       {user ? (
         <div className="sf-shell">
           <Sidebar />
-          <main className="sf-main">{routes}</main>
+          <main className="sf-main">
+            <Topbar />
+            <div className="sf-page">{routes}</div>
+          </main>
           {player}
         </div>
       ) : (

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import { useNavigate } from "react-router-dom"
-import { BsPlayFill, BsPauseFill } from "react-icons/bs"
-
-const GENRES = ["All", "Rock", "RnB", "HipHop", "EDM", "Pop", "Country", "Classical", "International"]
+import { BsPlayFill, BsPauseFill, BsHeart, BsHeartFill } from "react-icons/bs"
+import { SearchBarContext } from "../context/searchBarContext"
+import { getLikes, toggleLike } from "../utils/likes"
+import TrackList from "./TrackList"
 
 const Home = ({
     setCurrentSong,
     getSongInfo,
-    currentPlayer,
     setIsPlaying,
     isPlaying,
     currentSong,
@@ -15,10 +15,16 @@ const Home = ({
     getTrackIndex,
 }) => {
     const navigate = useNavigate()
+    const { searchBar } = useContext(SearchBarContext)
     const [songs, setSongs] = useState([])
-    const [users, setUsers] = useState([])
-    const [genre, setGenre] = useState("All")
     const [loading, setLoading] = useState(true)
+    const [likes, setLikes] = useState(getLikes())
+
+    const like = (e, id) => {
+        e.stopPropagation()
+        setLikes(toggleLike(id))
+    }
+    const liked = (id) => likes.includes(id)
 
     useEffect(() => {
         ;(async () => {
@@ -28,18 +34,18 @@ const Home = ({
             } catch (e) {
                 setSongs([])
             }
-            try {
-                const u = await fetch("/users").then((r) => r.json())
-                setUsers(Array.isArray(u) ? u : [])
-            } catch (e) {
-                setUsers([])
-            }
             setLoading(false)
         })()
     }, [])
 
-    const filtered =
-        genre === "All" ? songs : songs.filter((s) => s.genre === genre)
+    const query = (searchBar || "").trim().toLowerCase()
+    const filtered = query
+        ? songs.filter(
+              (s) =>
+                  s.title?.toLowerCase().includes(query) ||
+                  s.artist?.toLowerCase().includes(query),
+          )
+        : songs
 
     const playSong = (song, index, list) => {
         if (currentSong === song.link) {
@@ -53,31 +59,82 @@ const Home = ({
         setIsPlaying(true)
     }
 
+    if (loading) {
+        return (
+            <div className="sf-detail-loading">
+                <div className="sf-spinner" />
+            </div>
+        )
+    }
+
     const featured = songs[0]
+    const recent = filtered.slice(0, 5)
+    const featuredPlaying = featured && currentSong === featured.link && isPlaying
+
+    const likeAction = (song) => (
+        <button
+            className={"sf-trk-like" + (liked(song.id) ? " liked" : "")}
+            onClick={(e) => like(e, song.id)}
+            aria-label="Like"
+        >
+            {liked(song.id) ? <BsHeartFill /> : <BsHeart />}
+        </button>
+    )
+
+    // Search mode
+    if (query) {
+        return (
+            <div className="sf-home">
+                <div className="sf-sec-head">
+                    <h2>Results for "{searchBar}"</h2>
+                    <span className="sf-sec-count">{filtered.length} found</span>
+                </div>
+                {filtered.length === 0 ? (
+                    <div className="sf-empty">No matches.</div>
+                ) : (
+                    <TrackList
+                        songs={filtered}
+                        currentSong={currentSong}
+                        isPlaying={isPlaying}
+                        onPlay={(s, i) => playSong(s, i, filtered)}
+                        onOpen={(s) => navigate(`/song/${s.id}`)}
+                        trailing={likeAction}
+                    />
+                )}
+            </div>
+        )
+    }
 
     return (
         <div className="sf-home">
             {featured && (
-                <section
-                    className="sf-feature"
-                    style={
-                        featured.cover
-                            ? {
-                                  backgroundImage: `linear-gradient(90deg, rgba(11,9,19,0.92), rgba(11,9,19,0.55)), url(${featured.cover})`,
-                              }
-                            : undefined
-                    }
-                >
-                    <div className="sf-feature-body">
-                        <span className="sf-eyebrow">Featured today</span>
-                        <h1 className="sf-feature-title">{featured.title}</h1>
-                        <p className="sf-feature-artist">{featured.artist}</p>
-                        <div className="sf-feature-actions">
+                <section className="sf-hero">
+                    {featured.cover ? (
+                        <img
+                            className="sf-hero-art"
+                            src={featured.cover}
+                            alt={featured.title}
+                        />
+                    ) : (
+                        <div className="sf-hero-art sf-grad-art" />
+                    )}
+                    <div className="sf-hero-body">
+                        <span className="sf-hero-kicker">Featured today</span>
+                        <h1
+                            className="sf-hero-title sf-hero-title-link"
+                            onClick={() => navigate(`/song/${featured.id}`)}
+                        >
+                            {featured.title}
+                        </h1>
+                        <p className="sf-hero-sub">
+                            {featured.artist} · {featured.genre}
+                        </p>
+                        <div className="sf-hero-actions">
                             <button
-                                className="sf-btn sf-btn-primary"
+                                className="sf-play-btn"
                                 onClick={() => playSong(featured, 0, songs)}
                             >
-                                {currentSong === featured.link && isPlaying ? (
+                                {featuredPlaying ? (
                                     <>
                                         <BsPauseFill /> Pause
                                     </>
@@ -88,110 +145,78 @@ const Home = ({
                                 )}
                             </button>
                             <button
-                                className="sf-btn sf-btn-ghost"
-                                onClick={() => navigate(`/song/${featured.id}`)}
+                                className={
+                                    "sf-ghost-round" +
+                                    (liked(featured.id) ? " liked" : "")
+                                }
+                                onClick={(e) => like(e, featured.id)}
+                                aria-label="Like"
                             >
-                                Details
+                                {liked(featured.id) ? <BsHeartFill /> : <BsHeart />}
                             </button>
                         </div>
                     </div>
                 </section>
             )}
 
-            <div className="sf-genre-row">
-                {GENRES.map((g) => (
-                    <button
-                        key={g}
-                        className={"sf-genre-pill" + (genre === g ? " active" : "")}
-                        onClick={() => setGenre(g)}
-                    >
-                        {g}
-                    </button>
-                ))}
-            </div>
-
-            <section>
-                <div className="sf-section-head">
-                    <h2>{genre === "All" ? "All tracks" : genre}</h2>
-                    <span className="sf-count">{filtered.length} songs</span>
+            <section className="sf-sec">
+                <div className="sf-sec-head">
+                    <h2>Recently played</h2>
                 </div>
-
-                {loading ? (
-                    <div className="sf-empty">Loading…</div>
-                ) : filtered.length === 0 ? (
-                    <div className="sf-empty">No songs here yet.</div>
-                ) : (
-                    <div className="sf-grid">
-                        {filtered.map((song, i) => {
-                            const playingThis =
-                                currentSong === song.link && isPlaying
-                            return (
-                                <div className="sf-card" key={song.id || i}>
-                                    <div className="sf-card-art-wrap">
-                                        {song.cover ? (
-                                            <img
-                                                className="sf-card-art"
-                                                src={song.cover}
-                                                alt={song.title}
-                                            />
-                                        ) : (
-                                            <div className="sf-card-art sf-card-art-ph" />
-                                        )}
-                                        <button
-                                            className="sf-card-play"
-                                            onClick={() =>
-                                                playSong(song, i, filtered)
-                                            }
-                                            aria-label="Play"
-                                        >
-                                            {playingThis ? (
-                                                <BsPauseFill />
-                                            ) : (
-                                                <BsPlayFill />
-                                            )}
-                                        </button>
-                                    </div>
-                                    <div
-                                        className="sf-card-title"
-                                        onClick={() =>
-                                            navigate(`/song/${song.id}`)
-                                        }
+                <div className="sf-cards">
+                    {recent.map((song, i) => {
+                        const playingThis =
+                            currentSong === song.link && isPlaying
+                        return (
+                            <div className="sf-card2" key={song.id || i}>
+                                <div className="sf-card2-art-wrap">
+                                    {song.cover ? (
+                                        <img
+                                            className="sf-card2-art"
+                                            src={song.cover}
+                                            alt={song.title}
+                                        />
+                                    ) : (
+                                        <div className="sf-card2-art sf-grad-art" />
+                                    )}
+                                    <button
+                                        className="sf-card2-play"
+                                        onClick={() => playSong(song, i, songs)}
+                                        aria-label="Play"
                                     >
-                                        {song.title}
-                                    </div>
-                                    <div className="sf-card-artist">
-                                        {song.artist}
-                                    </div>
+                                        {playingThis ? (
+                                            <BsPauseFill />
+                                        ) : (
+                                            <BsPlayFill />
+                                        )}
+                                    </button>
                                 </div>
-                            )
-                        })}
-                    </div>
-                )}
+                                <div
+                                    className="sf-card2-title"
+                                    onClick={() => navigate(`/song/${song.id}`)}
+                                >
+                                    {song.title}
+                                </div>
+                                <div className="sf-card2-sub">{song.artist}</div>
+                            </div>
+                        )
+                    })}
+                </div>
             </section>
 
-            {users.length > 0 && (
-                <section className="sf-artists">
-                    <div className="sf-section-head">
-                        <h2>Artists</h2>
-                    </div>
-                    <div className="sf-artist-row">
-                        {users.map((u) => (
-                            <div
-                                className="sf-artist"
-                                key={u._id}
-                                onClick={() => navigate(`/user/${u.username}`)}
-                            >
-                                <div className="sf-artist-avatar">
-                                    {u.username?.charAt(0).toUpperCase()}
-                                </div>
-                                <span className="sf-artist-name">
-                                    {u.username}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
+            <section className="sf-sec">
+                <div className="sf-sec-head">
+                    <h2>Popular this week</h2>
+                </div>
+                <TrackList
+                    songs={songs}
+                    currentSong={currentSong}
+                    isPlaying={isPlaying}
+                    onPlay={(s, i) => playSong(s, i, songs)}
+                    onOpen={(s) => navigate(`/song/${s.id}`)}
+                    trailing={likeAction}
+                />
+            </section>
         </div>
     )
 }

@@ -1,580 +1,337 @@
-import React, { useState, useEffect, useRef } from "react"
-import orange from "../assets/orange.png"
-import { AiFillPlusCircle } from "react-icons/ai"
-import {
-    List,
-    Typography,
-    Divider,
-    Modal,
-    message,
-    Input,
-    Space,
-    Button,
-    notification,
-} from "antd"
-import "./styles/Slider.css"
+import React, { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import { useQuery, useMutation } from "@apollo/client"
+import { FiPlus, FiArrowLeft } from "react-icons/fi"
+import { BsPlayFill, BsPauseFill, BsHeart, BsHeartFill } from "react-icons/bs"
+import { getLikes, toggleLike } from "../utils/likes"
+import { playlistGradient } from "../utils/gradients"
+
 import {
     GET_SONG,
     GET_GENRES,
     GET_USER_PLAYLIST,
 } from "../utils/queries/songQueries"
-import { useQuery, useMutation } from "@apollo/client"
-import AudioSpectrum from "react-audio-spectrum"
 import { ADD_COMMENT } from "../utils/mutations/commentMutations"
-
-import CommentSection from "../components/CommentSection"
-import Waveform from "../components/Wavesurfer"
-import "../components/styles/CommentSection.css"
-import shuffleArray from "../utils/helpers/shuffleArray"
-import { useForm } from "../utils/hooks/hooks"
 import {
     CREATEPLAYLIST,
     ADDTOPLAYLIST,
 } from "../utils/mutations/playlistMutations"
-import "./styles/SongDetail.css"
-import { ReactComponent as Share } from "../assets/share.svg"
-import { ReactComponent as Add } from "../assets/add.svg"
-import playlistIcon from "../assets/playlist.png"
-import { ReactComponent as CreateIcon } from "../assets/create.svg"
-import { CircularProgress, Box } from "@mui/material"
+import CommentSection from "../components/CommentSection"
+import shuffleArray from "../utils/helpers/shuffleArray"
+import { useForm } from "../utils/hooks/hooks"
+import toast from "../utils/toast"
 
 const SongDetails = ({
     setCurrentSong,
     isPlaying,
-    currentPlayer,
     setIsPlaying,
     getSongInfo,
-    isDetailsPlaying,
     setSinglePL,
-    volume,
+    currentSong,
 }) => {
     const username = localStorage.getItem("username")
-    const [addComment, { error }] = useMutation(ADD_COMMENT)
+    const navigate = useNavigate()
     const { songId } = useParams()
-    const { loading, data } = useQuery(GET_SONG, {
-        variables: { songId: songId },
-    })
-    let navigate = useNavigate()
-    const recSongs = []
-    const [list, setList] = useState([])
-    const [commentText, setCommentText] = useState("")
-    const [characterCount, setCharacterCount] = useState(0)
+
+    const { loading, data } = useQuery(GET_SONG, { variables: { songId } })
     const querySong = data?.songById || {}
-    const { loading: recLoading, data: recdata } = useQuery(GET_GENRES, {
+
+    const { data: recdata } = useQuery(GET_GENRES, {
         variables: { genre: querySong.genre },
     })
-    const recommended = recdata?.songByGenre || []
-    const recList = Object.values(recommended)
-    const audio = useRef(null)
-    const [width, setWidth] = useState(window.innerWidth * (1075 / 1280))
-    let loadedPlayer = false
-    let isLoaded = useRef(loadedPlayer)
-    const addCommentHandler = async (event) => {
-        event.preventDefault()
+    const recList = Object.values(recdata?.songByGenre || [])
 
-        try {
-            await addComment({
-                variables: {
-                    songId: songId,
-                    token: localStorage.getItem("token"),
-                    commentText: commentText,
-                    commentAuthor: username,
-                },
-            })
-            setCommentText("")
-        } catch (err) {
-            //TODO: Add error handling.
-            console.error(err)
-        }
-    }
-
-    // CREATE-ADD TO PLAYLIST MODAL
-    const {
-        loading: playlistloading,
-        data: userPlaylists,
-        refetch,
-    } = useQuery(GET_USER_PLAYLIST, {
+    const { data: userPlaylists, refetch } = useQuery(GET_USER_PLAYLIST, {
         variables: { owner: username },
     })
     const usersPlaylists = userPlaylists?.userPlaylists || []
 
-    function registerUserCallback() {
-        const hide = message.loading("Creating playlist...", 0)
-        setTimeout(hide, 1100)
-    }
+    const [addComment] = useMutation(ADD_COMMENT)
+    const [createPlaylist] = useMutation(CREATEPLAYLIST)
+    const [addToPlaylist] = useMutation(ADDTOPLAYLIST)
 
-    const { onChange, onSubmit, values } = useForm(registerUserCallback, {
-        playlistname: "",
-    })
-
-    const [createPlaylist, { error: playlistCreationError }] =
-        useMutation(CREATEPLAYLIST)
-
-    const [addToPlaylist, { error: addToPlaylistError }] =
-        useMutation(ADDTOPLAYLIST)
-
-    const [playlist, setPlaylist] = useState({
-        playlistname: "",
-        username: username,
-        songId: songId,
-    })
-
-    const success = async () => {
-        await refetch()
-        await message.loading("Uploading playlist...")
-        await message.success("Successfully added song to playlist!")
-    }
-
-    const modalError = () => {
-        message.error("Must give playlist a name.")
-    }
-
+    const [commentText, setCommentText] = useState("")
+    const [list, setList] = useState([])
     const [isModalVisible, setIsModalVisible] = useState(false)
+    const [likes, setLikes] = useState(getLikes())
+    const isLiked = likes.includes(querySong._id)
 
-    const showModal = () => {
-        setIsModalVisible(true)
+    const { onChange, values } = useForm(() => {}, { playlistname: "" })
+
+    // Playing here does NOT happen on mount (that would interrupt whatever is
+    // already playing). Only this button changes playback.
+    const isThisPlaying = currentSong === querySong.link && isPlaying
+    const playThis = () => {
+        if (!querySong.link) return
+        if (currentSong === querySong.link) {
+            setIsPlaying(!isPlaying)
+            return
+        }
+        setCurrentSong(querySong.link)
+        getSongInfo({ title: querySong.title, artist: querySong.artist })
+        setSinglePL([])
+        setIsPlaying(true)
     }
 
-    const handleCreatePlaylist = async (e) => {
-        e.preventDefault()
-        if (values.playlistname === "") {
-            return modalError()
+    // Build a shuffled list of recommendations (excluding this track).
+    useEffect(() => {
+        if (recList.length) {
+            const shuffled = [...recList]
+            shuffleArray(shuffled)
+            const recs = shuffled
+                .filter((s) => s && s.title !== querySong.title)
+                .slice(0, 6)
+            setList(recs)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [recList.length])
 
+    const addCommentHandler = async () => {
+        if (!commentText.trim()) return
+        try {
+            await addComment({
+                variables: {
+                    songId,
+                    token: localStorage.getItem("token"),
+                    commentText,
+                    commentAuthor: username,
+                },
+            })
+            setCommentText("")
+            toast.success("Comment posted.")
+        } catch (err) {
+            toast.error("Couldn't post comment.")
+        }
+    }
+
+    const handleCreatePlaylist = async () => {
+        if (!values.playlistname.trim()) return toast.error("Give the playlist a name.")
         await createPlaylist({
             variables: {
                 playlistname: values.playlistname,
-                username: username,
+                username,
                 songId: querySong._id,
             },
         })
         setIsModalVisible(false)
-        success()
+        await refetch()
+        toast.success("Playlist created.")
     }
 
     const handleAddToPlaylist = async (e) => {
-        e.preventDefault()
         await addToPlaylist({
-            variables: {
-                _id: e.currentTarget.id,
-                songId: querySong._id,
-            },
+            variables: { _id: e.currentTarget.id, songId: querySong._id },
         })
         setIsModalVisible(false)
-        success()
+        await refetch()
+        toast.success("Added to playlist.")
     }
 
-    const handleCancel = () => {
-        setIsModalVisible(false)
-    }
 
-    // END PLAYLIST MODAL
-
-    const getCommentText = (event) => {
-        const { name, value } = event.target
-
-        if (name === "commentText" && value.length <= 240) {
-            setCommentText(value)
-            setCharacterCount(value.length)
-        }
-    }
-
-    useEffect(() => {
-        if (Object.keys(querySong).length !== 0) getSongInfo(querySong)
-        if (currentPlayer.current) currentPlayer.current.src = querySong.link
-    }, [querySong.link])
-
-    useEffect(() => {
-        if (querySong.link !== undefined) {
-            setCurrentSong(querySong.link)
-            setSinglePL([])
-        }
-    }, [querySong.link])
-
-    useEffect(() => {
-        if (recList.length != 0) {
-            shuffleArray(recList)
-            let count = 0
-            let top = 5
-            while (count < top) {
-                if (recList[count] === undefined) count++
-                else if (
-                    querySong.title !== recList[count].title &&
-                    !recSongs.includes(recList[count])
-                ) {
-                    recSongs.push(recList[count])
-                    count++
-                } else {
-                    count++
-                    top++
-                }
-            }
-            setList(recSongs)
-        }
-    }, [recList.length])
-    useEffect(() => {
-        window.addEventListener("resize", function () {
-            setWidth(window.innerWidth * (1075 / 1280))
-        })
-        isLoaded.current = true
-    })
     if (loading) {
         return (
-            <div>
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginTop: "4rem",
-                    }}
-                >
-                    <CircularProgress style={{ color: "orange" }} />
-                </Box>
+            <div className="sf-detail-loading">
+                <div className="sf-spinner" />
             </div>
         )
     }
-    const openNotificationWithIcon = (type) => {
-        notification[type]({
-            message: "Song URL copied to clipboard!",
-        })
-    }
-    const handleRecSongClick = (item) => {
-        navigate(`/song/${item._id}`)
-    }
+
     return (
-        <div
-            style={{
-                backgroundColor: "transparent",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                flexWrap: "wrap",
+        <div className="sf-detail">
+            <button className="sf-detail-back" onClick={() => navigate(-1)}>
+                <FiArrowLeft /> Back
+            </button>
 
-                paddingBottom: 55,
-            }}
-        >
-            <div
-                className="comment-area"
-                style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    flexWrap: "wrap",
-                    backgroundColor: "#fff",
-                }}
-            >
-                <div
-                    style={{
-                        background:
-                            "linear-gradient(315deg, hsla(29, 81%, 61%, 1) 0%, hsla(0, 0%, 0%, 1) 86%)",
-                        display: "flex",
-                        flexWrap: "wrap",
-                        width: "100%",
-                        justifyContent: "center",
-                    }}
-                >
-                    <div
-                        style={{
-                            zIndex: 1000,
-                            padding: 10,
-                            marginBottom: 0,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                        }}
-                    >
-                        <img
-                            src={querySong.cover ? querySong.cover : orange}
-                            style={{ width: "200px", height: "200px" }}
-                            alt="Album Cover"
-                        />
-                        <h2 style={{ color: "white", marginTop: "1rem" }}>
-                            {querySong.title}
-                        </h2>
-                        <h3
-                            style={{
-                                color: "white",
-                                opacity: ".7",
-                                marginTop: "-.7rem",
-                            }}
-                        >
-                            By {querySong.artist}
-                        </h3>
-                    </div>
-                    <Waveform
-                        isDetailsPlaying={isDetailsPlaying}
-                        isPlaying={isPlaying}
-                        setIsPlaying={setIsPlaying}
-                        audio={currentPlayer}
-                        volume={volume}
+            <section className="sf-detail-hero">
+                {querySong.cover ? (
+                    <img
+                        className="sf-detail-cover"
+                        src={querySong.cover}
+                        alt={querySong.title}
                     />
-                    <div
-                        style={{
-                            marginTop: -40,
-                            width: "100%",
-                            position: "relative",
-                            display: "flex",
-                            flexWrap: "wrap",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <AudioSpectrum
-                            height={100}
-                            width={width}
-                            id="audio-canvas"
-                            audioEle={currentPlayer.current}
-                        />
-                    </div>
-                </div>
-            </div>
+                ) : (
+                    <div className="sf-detail-cover sf-detail-cover-ph" />
+                )}
 
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                }}
-            >
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
-                    }}
-                ></div>
-            </div>
-            <div
-                className="comment-area"
-                style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "center",
-                }}
-            >
-                <div
-                    className="comment-details"
-                    style={{
-                        background: "#fff",
-
-                        display: "flex",
-                        flexWrap: "wrap",
-                        flexDirection: "column",
-                        // border: "1px solid grey",
-                    }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            flexWrap: "wrap",
-                            border: "1px solid rgb(218, 218, 218)",
-                        }}
-                    >
-                        <div style={{ margin: 10, marginLeft: 20 }}>
-                            {querySong.comments.length === 1 &&
-                                `${querySong.comments.length} comment`}
-                            {querySong.comments.length === 0 &&
-                                `${querySong.comments.length} comments`}
-                            {querySong.comments.length > 1 &&
-                                `${querySong.comments.length} comments`}
-                        </div>
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                        >
-                            <button
-                                style={{
-                                    margin: 10,
-                                    border: "1px solid grey",
-                                    padding: "3px 7px",
-                                    fontSize: ".7rem",
-                                    borderRadius: "4px",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                                onClick={() => {
-                                    navigator.clipboard.writeText(
-                                        window.location.href,
-                                    )
-                                    openNotificationWithIcon("success")
-                                }}
-                                className="detail-more-btn"
-                            >
-                                <Share
-                                    style={{
-                                        width: "1rem",
-                                        height: "1rem",
-                                        marginRight: ".3rem",
-                                    }}
-                                />{" "}
-                                Share
-                            </button>
-                            <button
-                                style={{
-                                    margin: 10,
-                                    border: "1px solid grey",
-                                    padding: "3px 7px",
-                                    fontSize: ".7rem",
-                                    borderRadius: "4px",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                                onClick={showModal}
-                                className="detail-more-btn"
-                            >
-                                <Add
-                                    style={{
-                                        width: "1rem",
-                                        height: "1rem",
-                                        marginRight: ".3rem",
-                                    }}
-                                />
-                                Add to Playlist
-                            </button>
-                        </div>
-                        <Modal
-                            title="Create or Select a Playlist"
-                            className="select-list"
-                            visible={isModalVisible}
-                            onCancel={handleCancel}
-                            destroyOnClose
-                            footer={[
-                                <Button key="cancel" onClick={handleCancel}>
-                                    Cancel
-                                </Button>,
-                            ]}
-                        >
-                            <Space style={{ display: "block" }}>
-                                <h4>Create Playlist:</h4>
-                                <div className="create-plist">
-                                    <Input
-                                        onChange={onChange}
-                                        className="create-playlistinput"
-                                        name="playlistname"
-                                        value={values.playlistname}
-                                        placeholder="Playlist Title"
-                                        size="large"
-                                        required
-                                    />
-
-                                    <button
-                                        className="create-playlist"
-                                        onClick={handleCreatePlaylist}
-                                    >
-                                        <CreateIcon className="create-icon" />
-                                        <div>Create</div>
-                                    </button>
-                                </div>
-                                <h4>Playlists:</h4>
-                                {usersPlaylists.map((playlist) => {
-                                    return (
-                                        <>
-                                            <div
-                                                key={playlist._id}
-                                                id={playlist._id}
-                                                className="add-playlist"
-                                                onClick={handleAddToPlaylist}
-                                            >
-                                                <img
-                                                    src={playlistIcon}
-                                                    alt="Playlist"
-                                                />
-                                                <div>{playlist.plTitle}</div>
-                                            </div>
-                                        </>
-                                    )
-                                })}
-                            </Space>
-                        </Modal>
-                    </div>
-
-                    <CommentSection
-                        comments={querySong.comments}
-                        songId={songId}
-                        className="comment-section"
-                        // style={{ width: "75%" }}
-                    />
-                    <div
-                        style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                        }}
-                    >
-                        <input
-                            name="commentText"
-                            value={commentText}
-                            onChange={getCommentText}
-                            className="detail-comment"
-                            style={{
-                                padding: 10,
-
-                                border: "1px solid rgb(218, 218, 218)",
-                            }}
-                            placeholder="Add a comment..."
-                        ></input>
+                <div className="sf-detail-info">
+                    {querySong.genre && (
+                        <span className="sf-eyebrow">{querySong.genre}</span>
+                    )}
+                    <h1 className="sf-detail-title">{querySong.title}</h1>
+                    <p className="sf-detail-artist">{querySong.artist}</p>
+                    <div className="sf-detail-actions">
+                        <button className="sf-play-btn" onClick={playThis}>
+                            {isThisPlaying ? (
+                                <>
+                                    <BsPauseFill /> Pause
+                                </>
+                            ) : (
+                                <>
+                                    <BsPlayFill /> Play
+                                </>
+                            )}
+                        </button>
                         <button
-                            className="detail-comment-btn"
-                            onClick={addCommentHandler}
-                            style={{
-                                // borderTop: "1px solid #888888",
-                                // borderBottom: "1px solid #888888",
-                                padding: "3px 7px",
-                                fontSize: ".7rem",
-
-                                background: "var(--orange)",
-                                color: "white",
-                            }}
+                            className={
+                                "sf-ghost-round" + (isLiked ? " liked" : "")
+                            }
+                            onClick={() => setLikes(toggleLike(querySong._id))}
+                            aria-label="Like"
                         >
-                            COMMENT
+                            {isLiked ? <BsHeartFill /> : <BsHeart />}
+                        </button>
+                        <button
+                            className="sf-chip"
+                            onClick={() => setIsModalVisible(true)}
+                        >
+                            <FiPlus /> Add to playlist
                         </button>
                     </div>
                 </div>
-                <div
-                    className="recommended"
-                    style={{
-                        background: "#fff",
-                        // borderLeft: "1px solid grey",
-                    }}
-                >
-                    {/* <Divider orientation="left">Recommended</Divider> */}
-                    <List
-                        style={{ height: "100%" }}
-                        header={
-                            <div
-                                style={{
-                                    display: "flex",
-                                    flexWrap: "wrap",
-                                    fontWeight: "bold",
-                                }}
-                            >
-                                Here are some songs related to "
-                                {querySong.title}"
+            </section>
+
+            {list.length > 0 && (
+                <section className="sf-sec">
+                    <div className="sf-sec-head">
+                        <h2>You might also like</h2>
+                    </div>
+                    <div className="sf-cards">
+                        {list.map((item) => (
+                            <div className="sf-card2" key={item._id}>
+                                <div className="sf-card2-art-wrap">
+                                    {item.cover ? (
+                                        <img
+                                            className="sf-card2-art"
+                                            src={item.cover}
+                                            alt={item.title}
+                                        />
+                                    ) : (
+                                        <div className="sf-card2-art sf-grad-art" />
+                                    )}
+                                </div>
+                                <div
+                                    className="sf-card2-title"
+                                    onClick={() => navigate(`/song/${item._id}`)}
+                                >
+                                    {item.title}
+                                </div>
+                                <div className="sf-card2-sub">{item.artist}</div>
                             </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            <section className="sf-detail-comments">
+                <h2 className="sf-detail-h2">
+                    {querySong.comments?.length || 0} comments
+                </h2>
+                <div className="sf-comment-compose">
+                    <input
+                        className="sf-input"
+                        value={commentText}
+                        onChange={(e) =>
+                            e.target.value.length <= 240 &&
+                            setCommentText(e.target.value)
                         }
-                        // footer={<div>Footer</div>}
-                        bordered
-                        dataSource={list}
-                        renderItem={(item) => (
-                            <List.Item
-                                className="rec-song"
-                                onClick={() => handleRecSongClick(item)}
-                            >
-                                {item.title}
-                                <br />
-                                <span className="rec-artist">
-                                    {item.artist}
-                                </span>
-                            </List.Item>
-                        )}
+                        placeholder="Add a comment…"
+                        onKeyDown={(e) =>
+                            e.key === "Enter" && addCommentHandler()
+                        }
                     />
+                    <button
+                        className="sf-btn sf-btn-primary"
+                        onClick={addCommentHandler}
+                    >
+                        Post
+                    </button>
                 </div>
-            </div>
+                <CommentSection comments={querySong.comments} songId={songId} />
+            </section>
+
+            {isModalVisible && (
+                <div
+                    className="sf-m2-overlay"
+                    onClick={() => setIsModalVisible(false)}
+                >
+                    <div className="sf-m2" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            className="sf-m2-close"
+                            onClick={() => setIsModalVisible(false)}
+                            aria-label="Close"
+                        >
+                            ×
+                        </button>
+                        <h2 className="sf-m2-title">Add to playlist</h2>
+
+                        <div className="sf-m2-song">
+                            {querySong.cover ? (
+                                <img
+                                    className="sf-m2-song-art"
+                                    src={querySong.cover}
+                                    alt={querySong.title}
+                                />
+                            ) : (
+                                <div className="sf-m2-song-art sf-grad-art" />
+                            )}
+                            <div className="sf-m2-song-meta">
+                                <span className="sf-m2-song-title">
+                                    {querySong.title}
+                                </span>
+                                <span className="sf-m2-song-artist">
+                                    {querySong.artist}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="sf-m2-create">
+                            <input
+                                className="sf-m2-input"
+                                name="playlistname"
+                                value={values.playlistname}
+                                onChange={onChange}
+                                placeholder="New playlist name…"
+                            />
+                            <button
+                                className="sf-m2-create-btn"
+                                onClick={handleCreatePlaylist}
+                            >
+                                <FiPlus /> Create
+                            </button>
+                        </div>
+
+                        <div className="sf-m2-pllist">
+                            {usersPlaylists.length === 0 ? (
+                                <div className="sf-m2-empty">
+                                    No playlists yet — create one above.
+                                </div>
+                            ) : (
+                                usersPlaylists.map((pl, i) => (
+                                    <button
+                                        key={pl._id}
+                                        id={pl._id}
+                                        className="sf-m2-plrow"
+                                        onClick={handleAddToPlaylist}
+                                    >
+                                        <span
+                                            className="sf-m2-pl-tile"
+                                            style={{
+                                                background: playlistGradient(i),
+                                            }}
+                                        />
+                                        <span className="sf-m2-pl-name">
+                                            {pl.plTitle}
+                                        </span>
+                                        <span className="sf-m2-pl-add">
+                                            <FiPlus />
+                                        </span>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

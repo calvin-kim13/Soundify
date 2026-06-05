@@ -3,7 +3,7 @@ import { gql } from "@apollo/client"
 export const CREATEPLAYLIST = gql`
     mutation createPlaylist(
         $playlistname: String!
-        $songId: ID!
+        $songId: ID
         $username: String!
     ) {
         createPlaylist(

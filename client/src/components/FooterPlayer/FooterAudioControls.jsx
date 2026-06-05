@@ -1,8 +1,10 @@
 import React from "react"
-import { ReactComponent as Play } from "./assets/play.svg"
-import { ReactComponent as Pause } from "./assets/pause.svg"
-import { ReactComponent as Next } from "./assets/next.svg"
-import { ReactComponent as Prev } from "./assets/prev.svg"
+import {
+    BsPlayFill,
+    BsPauseFill,
+    BsSkipStartFill,
+    BsSkipEndFill,
+} from "react-icons/bs"
 import "./styles/FooterMusicPlayer.css"
 
 const AudioControls = ({
@@ -11,41 +13,30 @@ const AudioControls = ({
     onPrevClick,
     onNextClick,
 }) => (
-    <div className="footer-audio-controls">
+    <div className="footer-audio-controls sf-controls">
         <button
             type="button"
-            className="prev"
+            className="sf-ctrl-side"
             aria-label="Previous"
             onClick={onPrevClick}
         >
-            <Prev />
+            <BsSkipStartFill />
         </button>
-        {isPlaying ? (
-            <button
-                type="button"
-                className="pause"
-                onClick={() => onPlayPauseClick(false)}
-                aria-label="Pause"
-            >
-                <Pause />
-            </button>
-        ) : (
-            <button
-                type="button"
-                className="play"
-                onClick={() => onPlayPauseClick(true)}
-                aria-label="Play"
-            >
-                <Play />
-            </button>
-        )}
         <button
             type="button"
-            className="next"
+            className="sf-ctrl-play"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            onClick={() => onPlayPauseClick(!isPlaying)}
+        >
+            {isPlaying ? <BsPauseFill /> : <BsPlayFill />}
+        </button>
+        <button
+            type="button"
+            className="sf-ctrl-side"
             aria-label="Next"
             onClick={onNextClick}
         >
-            <Next />
+            <BsSkipEndFill />
         </button>
     </div>
 )

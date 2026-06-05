@@ -2,11 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import FooterAudioControls from "./FooterAudioControls";
 import "./styles/FooterMusicPlayer.css";
-import Slider from "@mui/material/Slider";
-import Stack from "@mui/material/Stack";
-import VolumeUpRounded from "@mui/icons-material/VolumeUpRounded";
-import VolumeDownRounded from "@mui/icons-material/VolumeDownRounded";
-import Marquee from "react-fast-marquee";
+import { FiVolume1, FiVolume2 } from "react-icons/fi";
 let count = 0;
 const AudioPlayer = ({
   currentSong,
@@ -220,94 +216,54 @@ const AudioPlayer = ({
   const endTime = `${hDisplay}${mDisplay}${sDisplay}`;
 
   return (
-    <div className="footer-audio-player">
-      <div className="footer-track-info">
+    <div className="footer-audio-player sf-player">
+      {/* left: track info */}
+      <div className="sf-player-left">
+        <div className="sf-player-meta">
+          <span className="footer-title sf-player-title">{songInfo.title}</span>
+          <span className="footer-artist sf-player-artist">
+            {songInfo.artist}
+          </span>
+        </div>
         <FooterAudioControls
           isPlaying={isPlaying}
           onPrevClick={toPrevTrack}
           onNextClick={toNextTrack}
           onPlayPauseClick={setIsPlaying}
         />
-        <div className="musicianTrack">
-          {songInfo.title && songInfo.title.length > 6 ? (
-            <Marquee style={{ paddingTop: "5px" }} gradient={false} delay={2}>
-              <h2 className="footer-title" style={{ color: "white" }}>
-                {songInfo.title}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              </h2>
-            </Marquee>
-          ) : (
-            <h2
-              className="footer-title"
-              style={{ color: "white", paddingTop: "5px" }}
-            >
-              {songInfo.title}
-            </h2>
-          )}
+      </div>
 
-          {songInfo.artist && songInfo.artist.length > 8 ? (
-            <Marquee gradient={false} delay={2} style={{ marginTop: "-5px" }}>
-              <h3 className="footer-artist" style={{ color: "white" }}>
-                {songInfo.artist}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              </h3>
-            </Marquee>
-          ) : (
-            <h3
-              className="footer-artist"
-              style={{ color: "white", marginTop: "-5px" }}
-            >
-              {songInfo.artist}
-            </h3>
-          )}
+      {/* center: progress / time */}
+      <div className="sf-player-center">
+        <div className="sf-player-progress">
+          <span className="sf-player-time">{displayTime}</span>
+          <input
+            type="range"
+            value={trackProgress}
+            max={duration ? duration : `${duration}`}
+            className="footer-progress sf-player-bar"
+            id="footerTimerBar"
+            onChange={(e) => onScrub(e.target.value)}
+            onMouseUp={onScrubEnd}
+            onKeyUp={onScrubEnd}
+          />
+          <span className="sf-player-time">{endTime}</span>
         </div>
-        <div id="startFooterTimer">{displayTime}</div>
+      </div>
+
+      {/* right: volume */}
+      <div className="sf-player-right volContainer">
+        <FiVolume1 className="sf-vol-icon" />
         <input
           type="range"
-          value={trackProgress}
-          max={duration ? duration : `${duration}`}
-          className="footer-progress"
-          id="footerTimerBar"
-          onChange={(e) => onScrub(e.target.value)}
-          onMouseUp={onScrubEnd}
-          onKeyUp={onScrubEnd}
-          style={{ background: trackStyle }}
+          className="sf-volume"
+          aria-label="Volume"
+          min={0}
+          max={1}
+          step={0.01}
+          value={volume}
+          onChange={onVolumeChange}
         />
-        <div id="endFooterTimer">{endTime}</div>
-      </div>
-      {/* Volume slider */}
-      <div className="volContainer">
-        <Stack
-          spacing={2}
-          direction="row"
-          sx={{ mb: 0, px: 1 }}
-          alignItems="center"
-        >
-          <VolumeDownRounded />
-          <Slider
-            onChange={onVolumeChange}
-            aria-label="Volume"
-            value={volume}
-            max={1}
-            min={0.01}
-            step={0.01}
-            sx={{
-              "& .MuiSlider-track": {
-                border: "none",
-              },
-              "& .MuiSlider-thumb": {
-                width: 24,
-                height: 24,
-                backgroundColor: "#fff",
-                "&:before": {
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.4)",
-                },
-                "&:hover, &.Mui-focusVisible, &.Mui-active": {
-                  boxShadow: "none",
-                },
-              },
-            }}
-          />
-          <VolumeUpRounded />
-        </Stack>
       </div>
     </div>
   );

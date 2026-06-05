@@ -90,7 +90,7 @@ export default gql`
     ): Song
     createPlaylist(
       playlistname: String!
-      songId: ID!
+      songId: ID
       username: String!
     ): Playlist
     addToPlaylist(_id: String!, songId: ID!): Playlist

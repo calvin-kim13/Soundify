@@ -190,6 +190,9 @@ const resolvers = {
 
       const pLs = await newPlaylist.save();
 
+      // Allow creating an empty playlist (no song provided).
+      if (!songId) return pLs;
+
       return Playlist.findOneAndUpdate(
         { _id: mongoose.Types.ObjectId(pLs._id) },
         {

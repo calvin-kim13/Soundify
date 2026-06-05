@@ -1,318 +1,305 @@
-import { useState, useEffect } from "react";
-import { DeleteOutlined } from "@ant-design/icons";
-import "./styles/Playlists.scss";
-import "../components/styles/PlaylistList.scss";
-import "../components/Dashboard/styles/Dashboard2.scss";
-import { useQuery } from "@apollo/client";
-import { GET_USER_PLAYLIST } from "../utils/queries/songQueries";
-import { useLocation } from "react-router-dom";
-import PlaylistList from "../components/PlaylistLists";
-import { Box, CircularProgress } from "@mui/material";
-import playlistIcon from "../assets/playlist.png";
-import { useMutation } from "@apollo/client";
-import { REMOVE_PLAYLIST } from "../utils/mutations/playlistMutations";
-import Media from "react-media";
-import { message, Empty, Drawer } from "antd";
-import right from "../assets/right.png";
-import { ReactComponent as Close } from "../assets/close.svg";
+import { useState, useEffect } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { FiTrash2, FiArrowLeft, FiPlus } from "react-icons/fi"
+import { BsHeartFill, BsMusicNoteList } from "react-icons/bs"
+import { useQuery, useMutation } from "@apollo/client"
+import { GET_USER_PLAYLIST } from "../utils/queries/songQueries"
+import {
+    REMOVE_PLAYLIST,
+    REMOVE_FROM_PLAYLIST,
+    CREATEPLAYLIST,
+} from "../utils/mutations/playlistMutations"
+import { getLikes, toggleLike } from "../utils/likes"
+import { playlistGradient } from "../utils/gradients"
+import TrackList from "../components/TrackList"
+import toast from "../utils/toast"
 
 const Playlists = ({
-  currentPlayer,
-  singlePL,
-  setSinglePL,
-  setIsPlaying,
-  isPlaying,
-  currentSong,
-  getSongInfo,
-  setCurrentSong,
-  trackIndex,
-  getTrackIndex,
+    setSinglePL,
+    setIsPlaying,
+    isPlaying,
+    currentSong,
+    getSongInfo,
+    setCurrentSong,
+    getTrackIndex,
 }) => {
-  const [removePlaylist, { error }] = useMutation(REMOVE_PLAYLIST);
-  const token = localStorage.getItem("token");
-  const [currentTarget, setCurrentTarget] = useState(null);
-  const username = localStorage.getItem("username");
-  const [playlistClicked, setPlaylistClicked] = useState(false);
-  const [title, setPlTitle] = useState("");
-  const [playlistSong, setPlaylistSong] = useState();
-  const [selectedSong, setSelectedSong] = useState(false);
-  const [newTitle, setTitle] = useState();
-  const [activeState, setActiveState] = useState(-1);
-  const [deleting, setDeleting] = useState(false);
-  const [r, setR] = useState(false);
-  const location = useLocation();
+    const navigate = useNavigate()
+    const username = localStorage.getItem("username")
+    const token = localStorage.getItem("token")
 
-  const [visible, setVisible] = useState(false);
-  const showDrawer = () => {
-    setVisible(!visible);
-  };
+    const { data, refetch } = useQuery(GET_USER_PLAYLIST, {
+        variables: { owner: username },
+    })
+    const playlists = data?.userPlaylists || []
+    const [removePlaylist] = useMutation(REMOVE_PLAYLIST)
+    const [removeFromPlaylist] = useMutation(REMOVE_FROM_PLAYLIST)
+    const [createPlaylist] = useMutation(CREATEPLAYLIST)
 
-  const {
-    loading: playlistloading,
-    data,
-    refetch,
-  } = useQuery(GET_USER_PLAYLIST, {
-    variables: { owner: username },
-  });
-  let currentPlaylists = data?.userPlaylists || [];
+    const [allSongs, setAllSongs] = useState([])
+    const [likes, setLikes] = useState(getLikes())
+    const [selectedId, setSelectedId] = useState(null)
+    const [creating, setCreating] = useState(false)
+    const [newName, setNewName] = useState("")
 
-  useEffect(() => {
-    if (data !== undefined)
-      localStorage.setItem("playlists", JSON.stringify(currentPlaylists));
-  }, [currentPlaylists]);
-
-  useEffect(() => {
-    return setPlaylistClicked(false) && setSinglePL([]);
-  }, []);
-  useEffect(() => {
-    const fetchPlaylists = async () => {
-      await refetch();
-    };
-    fetchPlaylists();
-  }, [location.pathname]);
-
-  useEffect(() => {
-    localStorage.setItem("singlePL", JSON.stringify(singlePL));
-  }, [singlePL]);
-
-  const switchPlaylist = (e) => {
-    e.preventDefault();
-    setPlTitle(e.currentTarget.outerText);
-    setPlaylistClicked(true);
-
-    for (let i = 0; i < currentPlaylists.length; i++) {
-      if (currentPlaylists[i]._id === e.currentTarget.id) {
-        setCurrentTarget(e.currentTarget.id);
-        setSinglePL(currentPlaylists[i]);
-      }
+    const handleCreate = async () => {
+        if (!newName.trim()) return toast.error("Give the playlist a name.")
+        try {
+            await createPlaylist({
+                variables: { playlistname: newName.trim(), username },
+            })
+            setNewName("")
+            setCreating(false)
+            await refetch()
+            toast.success("Playlist created.")
+        } catch (err) {
+            toast.error("Couldn't create playlist.")
+        }
     }
-  };
-  useEffect(() => {
-    if (currentTarget)
-      for (let each of currentPlaylists)
-        if (each._id === currentTarget) setSinglePL(each);
-  }, [currentPlaylists]);
+    const [params] = useSearchParams()
+    const view = params.get("view")
 
-  const handleDelete = async (event, playlist) => {
-    setDeleting(true);
-    event.preventDefault();
-    try {
-      await removePlaylist({
-        variables: {
-          playlistId: playlist._id,
-          token: token,
-        },
-      });
-      await message.loading("Removing playlist.");
-      await refetch();
-      await message.success("Playlist removed.");
-    } catch (err) {
-      console.log(err);
-      message.error("Error removing playlist.");
+    useEffect(() => {
+        fetch("/songs")
+            .then((r) => r.json())
+            .then((s) => setAllSongs(Array.isArray(s) ? s : []))
+            .catch(() => {})
+    }, [])
+
+    // Open a specific playlist (or Liked Songs) when navigated via ?view=<id>.
+    useEffect(() => {
+        setSelectedId(view || null)
+    }, [view])
+
+    const likedSongs = allSongs.filter((s) => likes.includes(s.id))
+
+    const playSong = (song, index, list) => {
+        if (currentSong === song.link) {
+            setIsPlaying(!isPlaying)
+            return
+        }
+        getTrackIndex(index)
+        setCurrentSong(song.link)
+        setSinglePL({ songs: list })
+        getSongInfo({ title: song.title, artist: song.artist })
+        setIsPlaying(true)
     }
-    setDeleting(false);
-  };
 
-  return playlistloading ? (
-    <div>
-      {" "}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginTop: "14rem",
-        }}
-      >
-        <CircularProgress style={{ color: "orange" }} />
-      </Box>
-    </div>
-  ) : (
-    <Media query={{ maxWidth: 1000 }}>
-      {(matches) =>
-        matches ? (
-          <div className="playlist-container">
-            <div to="#" className="playlist-menu">
-              <div
-                style={{
-                  padding: "1rem",
-                }}
-              >
-                <img
-                  id="show-playlists-btn"
-                  onClick={showDrawer}
-                  src={right}
-                  alt="Right Arrow"
-                />
-              </div>
-              {/* <FaIcons.FaBars onClick={showDrawer} /> */}
-            </div>
-            <Drawer
-              closeIcon={<Close style={{ height: "1.5rem" }} />}
-              width="220px"
-              placement="left"
-              onClose={showDrawer}
-              visible={visible}
-            >
-              <div>
-                <h2>Playlists:</h2>
-                {currentPlaylists.length === 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      padding: "2rem 0",
-                    }}
-                  >
-                    <Empty description="No playlists created" />
-                  </div>
-                )}
-                {currentPlaylists.map((playlist, index) => {
-                  return (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
+    const deletePlaylist = async (e, pl) => {
+        e.stopPropagation()
+        try {
+            await removePlaylist({ variables: { playlistId: pl._id, token } })
+            await refetch()
+            toast.success("Playlist removed.")
+        } catch (err) {
+            toast.error("Couldn't remove playlist.")
+        }
+    }
+
+    // -------- selected playlist (or Liked Songs) view --------
+    if (selectedId) {
+        const isLiked = selectedId === "liked"
+        const plIndex = playlists.findIndex((p) => p._id === selectedId)
+        const pl = isLiked
+            ? { plTitle: "Liked Songs", songs: likedSongs }
+            : playlists.find((p) => p._id === selectedId)
+
+        if (!pl) {
+            return (
+                <div className="sf-pls">
+                    <button
+                        className="sf-detail-back"
+                        onClick={() => setSelectedId(null)}
                     >
-                      <div
-                        className={`playlist-button ${
-                          index === activeState ? "active" : null
-                        }`}
-                        key={playlist.plTitle}
-                        id={playlist._id}
-                        onClick={(e) => {
-                          showDrawer();
-                          switchPlaylist(e);
-                          setActiveState(index);
-                        }}
-                      >
-                        <div id={playlist._id} className="play-title">
-                          <img src={playlistIcon} alt="Playlist" />
-                          {playlist.plTitle}
-                        </div>
-                      </div>
-                      <div>
-                        <DeleteOutlined
-                          onClick={(event) => handleDelete(event, playlist)}
-                          style={{
-                            fontSize: "1.2rem",
-                            padding: ".5rem .8rem",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Drawer>
-            <div className="content">
-              {playlistClicked ? (
-                <PlaylistList
-                  refetch={refetch}
-                  setDeleting={setDeleting}
-                  singlePL={singlePL}
-                  currentPlayer={currentPlayer}
-                  data={singlePL}
-                  setIsPlaying={setIsPlaying}
-                  isPlaying={isPlaying}
-                  currentSong={currentSong}
-                  getSongInfo={getSongInfo}
-                  setCurrentSong={setCurrentSong}
-                  trackIndex={trackIndex}
-                  getTrackIndex={getTrackIndex}
-                />
-              ) : (
-                <div className="no-playlist-selected">
-                  <Empty description="No playlist selected" />
+                        <FiArrowLeft /> Playlists
+                    </button>
                 </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 4fr" }}>
-            <div className="playlist-name-container">
-              <h2>Playlists:</h2>
-              {currentPlaylists.length === 0 && (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    padding: "2rem 0",
-                  }}
+            )
+        }
+
+        const songs = pl.songs || []
+
+        const removeTrack = async (e, song) => {
+            e.stopPropagation()
+            if (isLiked) {
+                setLikes(toggleLike(song.id || song._id))
+                toast.success("Removed from Liked Songs.")
+                return
+            }
+            try {
+                await removeFromPlaylist({
+                    variables: { playlistId: selectedId, songId: song._id, token },
+                })
+                await refetch()
+                toast.success("Removed from playlist.")
+            } catch (err) {
+                toast.error("Couldn't remove song.")
+            }
+        }
+
+        return (
+            <div className="sf-pls">
+                <button
+                    className="sf-detail-back"
+                    onClick={() => setSelectedId(null)}
                 >
-                  <Empty description="No playlists created" />
-                </div>
-              )}
-              {currentPlaylists.map((playlist, index) => {
-                return (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                    <FiArrowLeft /> Playlists
+                </button>
+
+                <div className="sf-plview-head">
                     <div
-                      className={`playlist-button ${
-                        index === activeState ? "active" : null
-                      }`}
-                      key={playlist.plTitle}
-                      id={playlist._id}
-                      onClick={(e) => {
-                        switchPlaylist(e);
-                        setActiveState(index);
-                      }}
+                        className="sf-plview-art"
+                        style={
+                            isLiked
+                                ? { background: "linear-gradient(135deg,#ff5a5f,#ff9d4d)" }
+                                : { background: playlistGradient(plIndex) }
+                        }
                     >
-                      <div id={playlist._id} className="play-title">
-                        <img src={playlistIcon} alt="Playlist" />
-                        {playlist.plTitle}
-                      </div>
+                        {isLiked ? <BsHeartFill /> : <BsMusicNoteList />}
                     </div>
                     <div>
-                      <DeleteOutlined
-                        onClick={(event) => handleDelete(event, playlist)}
-                        style={{
-                          fontSize: "1.2rem",
-                          padding: ".5rem .8rem",
-                        }}
-                      />
+                        <span className="sf-pltracks-eyebrow">Playlist</span>
+                        <h1 className="sf-plview-title">{pl.plTitle}</h1>
+                        <p className="sf-pltracks-count">
+                            {songs.length} {songs.length === 1 ? "song" : "songs"}
+                        </p>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                </div>
 
-            <div className="playlist-container">
-              <div className="content">
-                {playlistClicked ? (
-                  <PlaylistList
-                    refetch={refetch}
-                    setDeleting={setDeleting}
-                    singlePL={singlePL}
-                    currentPlayer={currentPlayer}
-                    data={singlePL}
-                    setIsPlaying={setIsPlaying}
-                    isPlaying={isPlaying}
-                    currentSong={currentSong}
-                    getSongInfo={getSongInfo}
-                    setCurrentSong={setCurrentSong}
-                    trackIndex={trackIndex}
-                    getTrackIndex={getTrackIndex}
-                  />
+                {songs.length === 0 ? (
+                    <div className="sf-comments-empty">
+                        {isLiked
+                            ? "No liked songs yet — tap the heart on any song."
+                            : "No songs in this playlist yet."}
+                    </div>
                 ) : (
-                  <div className="no-playlist-selected">
-                    <Empty description="No playlist selected" />
-                  </div>
+                    <TrackList
+                        songs={songs}
+                        currentSong={currentSong}
+                        isPlaying={isPlaying}
+                        onPlay={(s, i) => playSong(s, i, songs)}
+                        onOpen={(s) => navigate(`/song/${s._id || s.id}`)}
+                        trailing={(s) => (
+                            <button
+                                className={
+                                    isLiked
+                                        ? "sf-trk-like liked"
+                                        : "sf-trk-del"
+                                }
+                                onClick={(e) => removeTrack(e, s)}
+                                aria-label={isLiked ? "Unfavorite" : "Remove"}
+                            >
+                                {isLiked ? <BsHeartFill /> : <FiTrash2 />}
+                            </button>
+                        )}
+                    />
                 )}
-              </div>
             </div>
-          </div>
         )
-      }
-    </Media>
-  );
-};
+    }
 
-export default Playlists;
+    // -------- grid of playlists --------
+    return (
+        <div className="sf-pls">
+            <div className="sf-pls-head">
+                <h1 className="sf-pls-title">Playlists</h1>
+                <button
+                    className="sf-pls-add"
+                    onClick={() => setCreating(true)}
+                    aria-label="New playlist"
+                    title="New playlist"
+                >
+                    <FiPlus />
+                </button>
+            </div>
+            <div className="sf-pls-grid">
+                <div
+                    className="sf-plcard"
+                    onClick={() => setSelectedId("liked")}
+                >
+                    <div className="sf-plcard-art sf-plcard-liked">
+                        <BsHeartFill />
+                    </div>
+                    <div className="sf-plcard-title">Liked Songs</div>
+                    <div className="sf-plcard-sub">
+                        {likedSongs.length} songs
+                    </div>
+                </div>
+
+                {playlists.map((pl, i) => (
+                    <div
+                        className="sf-plcard"
+                        key={pl._id}
+                        onClick={() => setSelectedId(pl._id)}
+                    >
+                        <div
+                            className="sf-plcard-art"
+                            style={{ background: playlistGradient(i) }}
+                        >
+                            <BsMusicNoteList />
+                        </div>
+                        <div className="sf-plcard-title">{pl.plTitle}</div>
+                        <div className="sf-plcard-sub">
+                            {pl.songs?.length || 0} songs
+                        </div>
+                        <button
+                            className="sf-plcard-del"
+                            onClick={(e) => deletePlaylist(e, pl)}
+                            aria-label="Delete playlist"
+                        >
+                            <FiTrash2 />
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            {creating && (
+                <div
+                    className="sf-m2-overlay"
+                    onClick={() => setCreating(false)}
+                >
+                    <div
+                        className="sf-m2 sf-m2-confirm"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="sf-m2-close"
+                            onClick={() => setCreating(false)}
+                            aria-label="Close"
+                        >
+                            ×
+                        </button>
+                        <h2 className="sf-m2-title">New playlist</h2>
+                        <p className="sf-m2-sub">Give your playlist a name.</p>
+                        <input
+                            className="sf-m2-input"
+                            style={{ marginTop: 16 }}
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            placeholder="Playlist name"
+                            onKeyDown={(e) =>
+                                e.key === "Enter" && handleCreate()
+                            }
+                            autoFocus
+                        />
+                        <div className="sf-m2-actions">
+                            <button
+                                className="sf-m2-ghost"
+                                onClick={() => setCreating(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="sf-m2-primary"
+                                onClick={handleCreate}
+                            >
+                                Create
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default Playlists
