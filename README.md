@@ -31,16 +31,6 @@ Soundify is a [MERN](https://www.mongodb.com/mern-stack) application (MongoDB, E
 - 📂 **Playlists** — group songs and play through them
 - 💬 **Comments** — discuss individual tracks
 
-## Screenshots
-
-| Landing | Dashboard |
-|---|---|
-| ![Landing page](client/src/assets/soundify-landing.png) | ![Dashboard](client/src/assets/soundify-better.png) |
-
-| Upload | Song detail |
-|---|---|
-| ![Upload](client/src/assets/soundify-upload.png) | ![Song detail](client/src/assets/soundify-song.png) |
-
 ## Architecture
 
 The app runs as two processes in development, launched together by `npm run dev`. The React client talks to a single Express server that exposes **GraphQL** for structured data and a small **REST** surface for binary file uploads. Data lives in **MongoDB Atlas**; uploaded files live on **local disk** and are served back as static URLs.
@@ -79,14 +69,14 @@ flowchart TD
 
 ## Tech Stack
 
-| Layer | Tools |
-|---|---|
-| **Client** | React 18, Create React App, Apollo Client, MUI, Ant Design, styled-components / SCSS, react-router, react-player, wavesurfer.js |
-| **Server** | Node.js, Express, Apollo Server (GraphQL), Multer |
-| **Database** | MongoDB Atlas via Mongoose |
-| **Auth** | JSON Web Tokens, bcryptjs |
-| **Storage** | Local disk (`server/uploads`), served via Express static |
-| **Dev tooling** | concurrently, nodemon |
+| Layer           | Tools                                                                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Client**      | React 18, Create React App, Apollo Client, MUI, Ant Design, styled-components / SCSS, react-router, react-player, wavesurfer.js |
+| **Server**      | Node.js, Express, Apollo Server (GraphQL), Multer                                                                               |
+| **Database**    | MongoDB Atlas via Mongoose                                                                                                      |
+| **Auth**        | JSON Web Tokens, bcryptjs                                                                                                       |
+| **Storage**     | Local disk (`server/uploads`), served via Express static                                                                        |
+| **Dev tooling** | concurrently, nodemon                                                                                                           |
 
 ## Getting Started
 
@@ -111,12 +101,12 @@ Copy the example and fill in your values:
 cp server/.env.example server/.env
 ```
 
-| Variable | Description |
-|---|---|
-| `MONGO_URL` | MongoDB Atlas connection string |
+| Variable     | Description                                                                                                          |
+| ------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `MONGO_URL`  | MongoDB Atlas connection string                                                                                      |
 | `JWT_SECRET` | Secret for signing tokens — generate with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
-| `PORT` | API server port (default `4000`) |
-| `SERVER_URL` | *(optional)* base URL used to build file links; defaults to `http://localhost:PORT` |
+| `PORT`       | API server port (default `4000`)                                                                                     |
+| `SERVER_URL` | _(optional)_ base URL used to build file links; defaults to `http://localhost:PORT`                                  |
 
 ### 3. Run
 
@@ -158,12 +148,15 @@ Soundify/
 ## How It Works
 
 **Register / log in**
+
 > Client sends a GraphQL mutation → resolver hashes/verifies the password (bcrypt) → signs a JWT → client stores it in `localStorage` and attaches it as the `Authorization` header → the auth middleware verifies it on each request.
 
 **Upload a song**
+
 > Client POSTs a multipart form to `/upload` → Multer reads the file into memory → the storage layer writes it to `server/uploads/` → a `Song` document is created in MongoDB and linked to the user.
 
 **Browse & play**
+
 > Client runs the `allSongs` GraphQL query → receives song documents whose `link` points at `/uploads/...` → the audio player streams the file directly.
 
 ## Authors
